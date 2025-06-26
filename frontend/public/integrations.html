@@ -189,17 +189,17 @@
 
     <script>
         function downloadOutlookAddin() {
-            // Trigger actual download of Outlook Add-in
+            // Download the manifest file directly
             const link = document.createElement('a');
-            link.href = '/outlook-addin.tar.gz';
-            link.download = 'effydoc-outlook-addin.tar.gz';
+            link.href = '/outlook-addin/manifest.xml';
+            link.download = 'effydoc-outlook-manifest.xml';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             
-            // Show success message
+            // Show instructions
             setTimeout(() => {
-                alert('✅ Outlook Add-in downloaded successfully!\n\n📋 Next steps:\n1. Extract the files\n2. Host on your HTTPS server\n3. Update domain URLs in manifest.xml\n4. Install via Outlook → Settings → Manage Add-ins');
+                alert('✅ Outlook Add-in Manifest downloaded!\n\n📋 Installation Steps:\n1. Open Outlook (Desktop or Web)\n2. Go to Get Add-ins → My Add-ins\n3. Click "Add a custom add-in" → "Add from file"\n4. Select the downloaded manifest.xml file\n5. Click "Install" and approve permissions\n\n🔗 Add-in Interface: ' + window.location.origin + '/outlook-addin/\n\n💡 The add-in will appear in your Outlook sidebar!');
             }, 500);
         }
 
