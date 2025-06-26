@@ -204,18 +204,8 @@
         }
 
         function downloadBrowserExtension() {
-            // Trigger actual download of Browser Extension
-            const link = document.createElement('a');
-            link.href = '/browser-extension.tar.gz';
-            link.download = 'effydoc-browser-extension.tar.gz';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Show success message
-            setTimeout(() => {
-                alert('✅ Browser Extension downloaded successfully!\n\n📋 Next steps:\n1. Extract the files\n2. Open Chrome/Edge → Extensions\n3. Enable Developer Mode\n4. Click "Load unpacked" → Select folder');
-            }, 500);
+            // Show coming soon message since browser extension is not yet implemented
+            alert('🚧 Browser Extension Coming Soon!\n\n📋 Current Status:\n✅ Outlook Add-in: Fully functional and available\n🔄 Browser Extension: In development\n\n💡 For now, please use the Outlook Add-in which provides:\n• Full document tracking\n• Real-time analytics\n• Preview & edit functionality\n• Attachment workflow\n\n🔗 The Outlook Add-in works with both Outlook Desktop and Outlook Web App.\n\nWe\'ll notify you when the browser extension is ready!');
         }
 
         function downloadCompletePackage() {
