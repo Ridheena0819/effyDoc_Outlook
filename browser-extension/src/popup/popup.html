@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>effyDOC Document Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 350px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+        }
+        
+        .popup-header {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .popup-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+        
+        .popup-icon {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+        
+        .popup-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .popup-subtitle {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+        
+        .popup-content {
+            padding: 20px;
+        }
+        
+        .status-section {
+            margin-bottom: 20px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        
+        .status-connected {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .status-disconnected {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .status-icon {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .btn {
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .outlook-check {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .outlook-check-icon {
+            font-size: 16px;
+            margin-right: 8px;
+        }
+        
+        .outlook-check-text {
+            font-size: 13px;
+            color: #92400e;
+        }
+        
+        .recent-activity {
+            margin-top: 20px;
+        }
+        
+        .activity-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+        
+        .activity-list {
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 12px;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            margin-right: 8px;
+            font-size: 14px;
+        }
+        
+        .activity-text {
+            flex: 1;
+            color: #374151;
+        }
+        
+        .activity-time {
+            color: #6b7280;
+            font-size: 11px;
+        }
+        
+        .footer {
+            padding: 16px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .footer-link {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        
+        .footer-link:hover {
+            color: #2563eb;
+        }
+        
+        .version {
+            color: #9ca3af;
+            font-size: 10px;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #2563eb;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        
+        .success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="popup-header">
+        <div class="popup-logo">
+            <span class="popup-icon">📊</span>
+            <span class="popup-title">effyDOC</span>
+        </div>
+        <div class="popup-subtitle">Document Tracker</div>
+    </div>
+
+    <div class="popup-content">
+        <!-- Loading State -->
+        <div id="loading-state" class="loading">
+            <div class="spinner"></div>
+            <span>Checking status...</span>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content" class="hidden">
+            <!-- Outlook Detection -->
+            <div id="outlook-check" class="outlook-check">
+                <span class="outlook-check-icon">⚠️</span>
+                <span class="outlook-check-text">Open Outlook Web App to use this extension</span>
+            </div>
+
+            <!-- Status Section -->
+            <div class="status-section">
+                <div id="status-indicator" class="status-indicator status-disconnected">
+                    <span class="status-icon">🔴</span>
+                    <span>Not connected to effyDOC</span>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div id="quick-stats" class="quick-stats hidden">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-documents">0</div>
+                    <div class="stat-label">Documents</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-views">0</div>
+                    <div class="stat-label">Views Today</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button id="open-sidebar-btn" class="btn btn-primary">
+                    📱 Open in Outlook
+                </button>
+                <button id="login-btn" class="btn btn-secondary hidden">
+                    🔑 Sign In to effyDOC
+                </button>
+                <button id="logout-btn" class="btn btn-secondary hidden">
+                    🚪 Sign Out
+                </button>
+            </div>
+
+            <!-- Recent Activity -->
+            <div id="recent-activity" class="recent-activity hidden">
+                <div class="activity-header">📈 Recent Activity</div>
+                <div class="activity-list" id="activity-list">
+                    <!-- Activities will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-links">
+            <a href="#" class="footer-link" id="dashboard-link">Dashboard</a>
+            <a href="#" class="footer-link" id="help-link">Help</a>
+            <a href="#" class="footer-link" id="settings-link">Settings</a>
+        </div>
+        <div class="version">v1.0.0</div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
