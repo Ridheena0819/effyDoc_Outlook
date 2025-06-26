@@ -19,7 +19,7 @@
   ],
   
   "background": {
-    "service_worker": "background/background.js"
+    "service_worker": "src/background/background.js"
   },
   
   "content_scripts": [
@@ -29,14 +29,14 @@
         "https://outlook.office.com/*", 
         "https://outlook.office365.com/*"
       ],
-      "js": ["content/content.js"],
-      "css": ["content/content.css"],
+      "js": ["src/content/content.js"],
+      "css": ["src/content/content.css"],
       "run_at": "document_end"
     }
   ],
   
   "action": {
-    "default_popup": "popup/popup.html",
+    "default_popup": "src/popup/popup.html",
     "default_title": "effyDOC Document Tracker",
     "default_icon": {
       "16": "assets/icon-16.png",
@@ -56,7 +56,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "components/*",
+        "src/components/*",
         "assets/*"
       ],
       "matches": [
