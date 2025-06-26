@@ -11,7 +11,7 @@ import tempfile
 import time
 
 # Get the backend URL from the frontend .env file
-BACKEND_URL = "https://7056c40d-c306-42f0-bfc6-379013315fc8.preview.emergentagent.com/api"
+BACKEND_URL = "https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/api"
 
 class EnhancedUploadTest(unittest.TestCase):
     """Test the enhanced document upload functionality"""
