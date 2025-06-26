@@ -465,6 +465,38 @@ async def generate_trackable_link(
         logger.error(f"Error generating trackable link: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/documents/{document_id}/content")
+async def get_document_content(
+    document_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get document content for preview/editing in Outlook add-in"""
+    try:
+        documents_collection = await get_collection('documents')
+        document = await documents_collection.find_one({"id": document_id})
+        
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        if document["owner_id"] != current_user.id:
+            collaborator_ids = [c.get("user_id") for c in document.get("collaborators", [])]
+            if current_user.id not in collaborator_ids:
+                raise HTTPException(status_code=403, detail="Access denied")
+        
+        return {
+            "id": document["id"],
+            "title": document["title"],
+            "type": document["type"],
+            "total_pages": document.get("total_pages", len(document.get("pages", []))),
+            "pages": document.get("pages", []),
+            "sections": document.get("sections", []),
+            "can_edit": document["owner_id"] == current_user.id
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting document content: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/status")
 async def outlook_addin_status():
     """Health check and status for Outlook add-in"""
