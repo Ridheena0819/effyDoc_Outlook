@@ -26,11 +26,11 @@ interface Document {
 }
 
 interface ContentHubProps {
-  onDocumentSelect?: (document: Document) => void;
+  onDocumentSelect?: (document: BaseDocument) => void;
 }
 
 const ContentHub: React.FC<ContentHubProps> = ({ onDocumentSelect }) => {
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<HubDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sendingDocument, setSendingDocument] = useState<string | null>(null);
