@@ -38,11 +38,11 @@ interface HubDocument extends BaseDocument {
 }
 
 interface DocumentLibraryProps {
-  onDocumentSelect?: (document: Document) => void;
+  onDocumentSelect?: (document: BaseDocument) => void;
 }
 
 const DocumentLibrary: React.FC<DocumentLibraryProps> = ({ onDocumentSelect }) => {
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<LibraryDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sendingDocument, setSendingDocument] = useState<string | null>(null);
