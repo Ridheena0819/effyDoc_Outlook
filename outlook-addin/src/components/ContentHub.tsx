@@ -79,7 +79,7 @@ const ContentHub: React.FC<ContentHubProps> = ({ onDocumentSelect }) => {
     ? documents 
     : documents.filter(doc => doc.tags.includes(selectedCategory));
 
-  const sendTrackableDocument = async (document: Document) => {
+  const sendTrackableDocument = async (document: HubDocument) => {
     try {
       setSendingDocument(document.id);
       
