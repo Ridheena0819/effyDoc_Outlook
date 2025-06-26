@@ -219,12 +219,6 @@ const AttachmentWorkflow: React.FC<AttachmentWorkflowProps> = ({ isOpen, onClose
         }
       );
     }
-  }; catch (error: any) {
-      console.error('Error attaching document:', error);
-      toast.error('Failed to attach document');
-    } finally {
-      setLoading(false);
-    }
   };
 
   if (!isOpen) return null;
