@@ -11,20 +11,30 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-interface Document {
+interface BaseDocument {
   id: string;
   title: string;
   type: string;
   created_at: string;
   total_pages: number;
+  share_link: string;
+  is_trackable: boolean;
+}
+
+interface LibraryDocument extends BaseDocument {
   file_size: number;
   tracking_stats: {
     total_views: number;
     total_shares: number;
     last_viewed: string | null;
   };
-  share_link: string;
-  is_trackable: boolean;
+}
+
+interface HubDocument extends BaseDocument {
+  owner_name: string;
+  description: string;
+  tags: string[];
+  is_template: boolean;
 }
 
 interface DocumentLibraryProps {
