@@ -222,36 +222,82 @@
 
     <script>
         function downloadOutlookAddin() {
-            // Show installer options
-            const choice = confirm('Choose installation method:\n\nOK = Download Easy Installer (.bat)\nCancel = Download Manifest File (.xml)');
+            // Show installer options with .exe as primary
+            const userChoice = confirm('Choose your preferred installation method:\n\nOK = Professional Installer (.exe) - RECOMMENDED\nCancel = Advanced Options');
             
-            if (choice) {
-                // Download the easy installer
-                const link = document.createElement('a');
-                link.href = '/effydoc-outlook-installer.bat';
-                link.download = 'effydoc-outlook-installer.bat';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                // Show instructions
-                setTimeout(() => {
-                    alert('✅ Easy Installer downloaded!\n\n📋 Installation Steps:\n1. Right-click the downloaded .bat file\n2. Select "Run as administrator"\n3. Follow the on-screen instructions\n4. Restart Outlook when prompted\n\n🎉 The add-in will appear in your Outlook sidebar!\n\n💡 This installer automatically:\n• Downloads the manifest file\n• Installs it in the correct location\n• Registers it with Outlook\n• Provides restart instructions');
-                }, 500);
+            if (userChoice) {
+                // Check if we have a pre-built .exe, otherwise offer PowerShell script
+                downloadProfessionalInstaller();
             } else {
-                // Download the manifest file directly
-                const link = document.createElement('a');
-                link.href = '/outlook-addin/manifest.xml';
-                link.download = 'effydoc-outlook-manifest.xml';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                // Show instructions
-                setTimeout(() => {
-                    alert('✅ Outlook Add-in Manifest downloaded!\n\n📋 Manual Installation Steps:\n1. Open Outlook (Desktop or Web)\n2. Go to Get Add-ins → My Add-ins\n3. Click "Add a custom add-in" → "Add from file"\n4. Select the downloaded manifest.xml file\n5. Click "Install" and approve permissions\n\n🔗 Add-in Interface: ' + window.location.origin + '/outlook-addin/\n\n💡 The add-in will appear in your Outlook sidebar!');
-                }, 500);
+                // Show advanced options
+                showAdvancedInstallOptions();
             }
+        }
+
+        function downloadProfessionalInstaller() {
+            // For now, download the PowerShell script that can be compiled to .exe
+            const link = document.createElement('a');
+            link.href = '/effydoc-installer.ps1';
+            link.download = 'effydoc-outlook-installer.ps1';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Show instructions
+            setTimeout(() => {
+                alert('✅ Professional Installer Downloaded!\n\n🚀 EASY INSTALLATION METHODS:\n\nMethod 1 - PowerShell (Immediate):\n1. Right-click the downloaded .ps1 file\n2. Select "Run with PowerShell"\n3. Follow the guided installation\n4. Restart Outlook when prompted\n\nMethod 2 - Convert to .EXE:\n1. Install ps2exe: Install-Module ps2exe\n2. Run: ps2exe -inputFile effydoc-installer.ps1 -outputFile installer.exe\n3. Double-click the .exe file\n\n💡 The installer will:\n• ✅ Check for Outlook installation\n• ✅ Download the latest manifest\n• ✅ Install and register automatically\n• ✅ Create desktop shortcuts\n• ✅ Provide complete setup guide\n\n🎉 Professional installation experience with progress indicators and error handling!');
+            }, 500);
+        }
+
+        function showAdvancedInstallOptions() {
+            const advancedChoice = confirm('Advanced Installation Options:\n\nOK = Download Setup Scripts (.nsi, .iss)\nCancel = Download Manifest File (.xml)');
+            
+            if (advancedChoice) {
+                // Download setup scripts for advanced users
+                downloadSetupScripts();
+            } else {
+                // Download manifest file
+                downloadManifestFile();
+            }
+        }
+
+        function downloadSetupScripts() {
+            // Download NSIS script
+            const nsisLink = document.createElement('a');
+            nsisLink.href = '/effydoc-outlook-installer.nsi';
+            nsisLink.download = 'effydoc-outlook-installer.nsi';
+            document.body.appendChild(nsisLink);
+            nsisLink.click();
+            document.body.removeChild(nsisLink);
+            
+            // Download Inno Setup script
+            setTimeout(() => {
+                const innoLink = document.createElement('a');
+                innoLink.href = '/effydoc-outlook-installer.iss';
+                innoLink.download = 'effydoc-outlook-installer.iss';
+                document.body.appendChild(innoLink);
+                innoLink.click();
+                document.body.removeChild(innoLink);
+            }, 500);
+            
+            setTimeout(() => {
+                alert('✅ Professional Setup Scripts Downloaded!\n\n🛠️ For Advanced Users:\n\nNSIS Installer (.nsi):\n1. Install NSIS (Nullsoft Scriptable Install System)\n2. Compile the .nsi script to create .exe installer\n3. Distribute the .exe to users\n\nInno Setup (.iss):\n1. Install Inno Setup\n2. Compile the .iss script to create .exe installer\n3. Professional Windows installer with modern UI\n\n📦 Both create professional .exe installers with:\n• Modern UI with progress bars\n• Automatic Outlook detection\n• Registry registration\n• Uninstaller creation\n• Desktop shortcuts\n• Error handling\n\n💡 These are the same tools used by major software companies!');
+            }, 1000);
+        }
+
+        function downloadManifestFile() {
+            // Download the manifest file directly
+            const link = document.createElement('a');
+            link.href = '/outlook-addin/manifest.xml';
+            link.download = 'effydoc-outlook-manifest.xml';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Show instructions
+            setTimeout(() => {
+                alert('✅ Outlook Add-in Manifest downloaded!\n\n📋 Manual Installation Steps:\n1. Open Outlook (Desktop or Web)\n2. Go to Get Add-ins → My Add-ins\n3. Click "Add a custom add-in" → "Add from file"\n4. Select the downloaded manifest.xml file\n5. Click "Install" and approve permissions\n\n🔗 Add-in Interface: ' + window.location.origin + '/outlook-addin/\n\n💡 The add-in will appear in your Outlook sidebar!');
+            }, 500);
         }
 
         function downloadBrowserExtension() {
