@@ -221,15 +221,15 @@
         function downloadCompletePackage() {
             // This downloads the complete package
             const link = document.createElement('a');
-            link.href = '/effydoc-outlook-integrations.tar.gz';
-            link.download = 'effydoc-complete-integrations.tar.gz';
+            link.href = '/outlook-addin.tar.gz';
+            link.download = 'effydoc-outlook-addin-complete.tar.gz';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             
             // Show success message
             setTimeout(() => {
-                alert('✅ Complete Integration Package downloaded!\n\n📦 Includes:\n• Outlook Add-in files\n• Browser Extension files\n• Installation guides\n• Configuration scripts\n\nCheck the README.md for detailed setup instructions.');
+                alert('✅ Complete Outlook Add-in Package downloaded!\n\n📦 Includes:\n• Complete add-in interface files\n• Manifest.xml for installation\n• All static assets\n\n📋 Quick Setup:\n1. For simple install: Use manifest.xml directly\n2. For custom hosting: Extract and host files\n\n🔗 Add-in URL: ' + window.location.origin + '/outlook-addin/');
             }, 500);
         }
     </script>
