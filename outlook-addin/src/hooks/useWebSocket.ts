@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { websocketService } from '../services/api.ts';
+import { websocketService } from '../services/api';
 
 interface TrackingUpdate {
   type: string;
