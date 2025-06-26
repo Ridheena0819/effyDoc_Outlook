@@ -114,53 +114,55 @@
 
             <!-- Installation Instructions -->
             <div class="bg-white rounded-lg shadow-lg p-8 mb-12">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">🚀 Installation Instructions</h2>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">🚀 Outlook Add-in Installation</h2>
                 
-                <div class="grid md:grid-cols-2 gap-8">
+                <div class="max-w-3xl mx-auto">
                     <!-- Outlook Add-in Instructions -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-blue-600 mb-4">Outlook Add-in Setup:</h3>
-                        <ol class="space-y-2 text-sm text-gray-700">
+                    <div class="bg-blue-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-blue-600 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Easy Installation Steps:
+                        </h3>
+                        <ol class="space-y-3 text-sm text-gray-700">
                             <li class="flex">
                                 <span class="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">1</span>
-                                Download and extract the add-in files
+                                <div>
+                                    <strong>Download the manifest file</strong> using the button above
+                                </div>
                             </li>
                             <li class="flex">
                                 <span class="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">2</span>
-                                Host files on your HTTPS web server
+                                <div>
+                                    <strong>Open Outlook</strong> (Desktop or Web version)
+                                </div>
                             </li>
                             <li class="flex">
                                 <span class="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">3</span>
-                                Update domain URLs in manifest.xml
+                                <div>
+                                    <strong>Go to Get Add-ins → My Add-ins</strong> (or Settings → Manage Add-ins for web)
+                                </div>
                             </li>
                             <li class="flex">
                                 <span class="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">4</span>
-                                Install via Outlook Settings → Manage Add-ins
+                                <div>
+                                    <strong>Click "Add from file"</strong> and select the downloaded manifest.xml
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <span class="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">5</span>
+                                <div>
+                                    <strong>Install and enjoy!</strong> The effyDOC panel will appear in your Outlook sidebar
+                                </div>
                             </li>
                         </ol>
-                    </div>
-
-                    <!-- Browser Extension Instructions -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-purple-600 mb-4">Browser Extension Setup:</h3>
-                        <ol class="space-y-2 text-sm text-gray-700">
-                            <li class="flex">
-                                <span class="bg-purple-100 text-purple-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">1</span>
-                                Download and extract extension files
-                            </li>
-                            <li class="flex">
-                                <span class="bg-purple-100 text-purple-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">2</span>
-                                Open Chrome/Edge → Extensions
-                            </li>
-                            <li class="flex">
-                                <span class="bg-purple-100 text-purple-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">3</span>
-                                Enable Developer Mode
-                            </li>
-                            <li class="flex">
-                                <span class="bg-purple-100 text-purple-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">4</span>
-                                Click "Load unpacked" → Select folder
-                            </li>
-                        </ol>
+                        
+                        <div class="mt-4 p-3 bg-blue-100 rounded border-l-4 border-blue-500">
+                            <p class="text-sm text-blue-700">
+                                <strong>💡 Tip:</strong> Once installed, you'll see the effyDOC panel on the right side of Outlook with three tabs: My Library, Content Hub, and Live Tracking.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
