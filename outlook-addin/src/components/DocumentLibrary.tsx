@@ -83,7 +83,7 @@ const DocumentLibrary: React.FC<DocumentLibraryProps> = ({ onDocumentSelect }) =
     });
   };
 
-  const sendTrackableDocument = async (document: Document) => {
+  const sendTrackableDocument = async (document: LibraryDocument) => {
     try {
       setSendingDocument(document.id);
       
