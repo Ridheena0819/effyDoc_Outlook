@@ -154,7 +154,7 @@ const AttachmentWorkflow: React.FC<AttachmentWorkflowProps> = ({ isOpen, onClose
                 toast.success(`Trackable document attached: ${filename}`);
                 
                 // Track the attachment
-                documentsAPI.trackEmailSent({
+                trackingAPI.trackEmailSent({
                   document_id: selectedDocument.id,
                   recipients: [], // Will be filled when email is sent
                   subject: 'Document Attached',
