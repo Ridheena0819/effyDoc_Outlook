@@ -179,7 +179,7 @@ export class WebSocketService {
 
   unsubscribeFromDocument(documentId: string) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.dumps({
+      this.ws.send(JSON.stringify({
         type: 'unsubscribe_document',
         document_id: documentId
       }));
