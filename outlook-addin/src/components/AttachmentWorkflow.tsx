@@ -132,16 +132,24 @@ const AttachmentWorkflow: React.FC<AttachmentWorkflowProps> = ({ isOpen, onClose
       const blob = new Blob([htmlContent], { type: 'text/html' });
       
       // Use Office.js to attach the file
-      if (Office.context.mailbox.item && Office.context.mailbox.item.addFileAttachmentFromBase64) {
+      if (Office.context.mailbox.item) {
         // Convert blob to base64
         const reader = new FileReader();
         reader.onload = () => {
           const base64 = (reader.result as string).split(',')[1];
           
-          Office.context.mailbox.item!.addFileAttachmentFromBase64(
-            base64,
+          // Use the correct Office.js attachment method
+          const attachmentOptions = {
+            base64: base64,
+            name: filename,
+            isInline: false
+          };
+          
+          (Office.context.mailbox.item as any).addFileAttachmentAsync(
+            `data:text/html;base64,${base64}`,
             filename,
-            (result) => {
+            attachmentOptions,
+            (result: any) => {
               if (result.status === Office.AsyncResultStatus.Succeeded) {
                 toast.success(`Trackable document attached: ${filename}`);
                 
@@ -156,37 +164,61 @@ const AttachmentWorkflow: React.FC<AttachmentWorkflowProps> = ({ isOpen, onClose
                 onClose();
               } else {
                 toast.error('Failed to attach document to email');
+                console.error('Attachment error:', result.error);
+                
+                // Fallback: Insert link in email body
+                handleFallbackLinkInsertion();
               }
             }
           );
         };
         reader.readAsDataURL(blob);
       } else {
-        // Fallback: Insert link in email body
-        const trackingLink = attachmentData.tracking_link;
-        const linkText = `📎 Trackable Document: ${selectedDocument.title}\n\nView online: ${trackingLink}\n\n`;
-        
-        Office.context.mailbox.item!.body.getAsync(
-          Office.CoercionType.Text,
-          (result) => {
-            if (result.status === Office.AsyncResultStatus.Succeeded) {
-              const currentBody = result.value || '';
-              const newBody = linkText + currentBody;
-              
-              Office.context.mailbox.item!.body.setAsync(
-                newBody,
-                { coercionType: Office.CoercionType.Text },
-                (setResult) => {
-                  if (setResult.status === Office.AsyncResultStatus.Succeeded) {
-                    toast.success('Trackable document link added to email!');
-                    onClose();
-                  }
-                }
-              );
-            }
-          }
-        );
+        handleFallbackLinkInsertion();
       }
+      
+    } catch (error: any) {
+      console.error('Error attaching document:', error);
+      toast.error('Failed to attach document');
+      handleFallbackLinkInsertion();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFallbackLinkInsertion = () => {
+    if (!selectedDocument) return;
+    
+    // Fallback: Insert link in email body
+    const trackingLink = `/view/${selectedDocument.id}`;
+    const linkText = `📎 Trackable Document: ${selectedDocument.title}\n\nView online: ${trackingLink}\n\n`;
+    
+    if (Office.context.mailbox.item) {
+      Office.context.mailbox.item.body.getAsync(
+        Office.CoercionType.Text,
+        (result) => {
+          if (result.status === Office.AsyncResultStatus.Succeeded) {
+            const currentBody = result.value || '';
+            const newBody = linkText + currentBody;
+            
+            Office.context.mailbox.item!.body.setAsync(
+              newBody,
+              { coercionType: Office.CoercionType.Text },
+              (setResult) => {
+                if (setResult.status === Office.AsyncResultStatus.Succeeded) {
+                  toast.success('Trackable document link added to email!');
+                  onClose();
+                } else {
+                  toast.error('Failed to add document link');
+                }
+              }
+            );
+          } else {
+            toast.error('Failed to access email content');
+          }
+        }
+      );
+    }
       
     } catch (error: any) {
       console.error('Error attaching document:', error);
