@@ -42,6 +42,7 @@ const TaskPane: React.FC = () => {
   const [selectedDocument, setSelectedDocument] = useState<BaseDocument | null>(null);
   const [loginCredentials, setLoginCredentials] = useState({ email: '', password: '' });
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [showAttachmentWorkflow, setShowAttachmentWorkflow] = useState(false);
 
   useEffect(() => {
     initializeApp();
