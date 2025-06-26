@@ -245,8 +245,18 @@
         }
 
         function downloadBrowserExtension() {
-            // Show coming soon message since browser extension is not yet implemented
-            alert('🚧 Browser Extension Coming Soon!\n\n📋 Current Status:\n✅ Outlook Add-in: Fully functional and available\n🔄 Browser Extension: In development\n\n💡 For now, please use the Outlook Add-in which provides:\n• Full document tracking\n• Real-time analytics\n• Preview & edit functionality\n• Attachment workflow\n\n🔗 The Outlook Add-in works with both Outlook Desktop and Outlook Web App.\n\nWe\'ll notify you when the browser extension is ready!');
+            // Download the browser extension package
+            const link = document.createElement('a');
+            link.href = '/browser-extension.tar.gz';
+            link.download = 'effydoc-browser-extension.tar.gz';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Show success message
+            setTimeout(() => {
+                alert('✅ Browser Extension downloaded successfully!\n\n📦 Installation Steps:\n\n🔧 Chrome/Edge:\n1. Extract the downloaded file\n2. Open Chrome/Edge → Extensions (chrome://extensions/)\n3. Enable "Developer Mode" (toggle in top right)\n4. Click "Load unpacked" → Select extracted folder\n5. Open Outlook Web App and start using!\n\n🦊 Firefox:\n1. Extract the downloaded file\n2. Open Firefox → Add-ons (about:addons)\n3. Click gear icon → "Install Add-on From File"\n4. Select the manifest.json from extracted folder\n\n🌐 Works with Outlook Web App at:\n• outlook.office.com\n• outlook.live.com\n• outlook.office365.com\n\n💡 The extension adds a sidebar to Outlook Web with the same features as the desktop add-in!');
+            }, 500);
         }
 
         function downloadCompletePackage() {
