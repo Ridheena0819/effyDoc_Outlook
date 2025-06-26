@@ -52,7 +52,11 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({ userEmail, selectedDocument
   useEffect(() => {
     if (selectedDocumentId && !subscribedDocuments.has(selectedDocumentId)) {
       subscribeToDocument(selectedDocumentId);
-      setSubscribedDocuments(prev => new Set([...prev, selectedDocumentId]));
+      setSubscribedDocuments(prev => {
+        const newSet = new Set(prev);
+        newSet.add(selectedDocumentId);
+        return newSet;
+      });
       loadMetrics(selectedDocumentId);
     }
   }, [selectedDocumentId, subscribeToDocument, subscribedDocuments]);
