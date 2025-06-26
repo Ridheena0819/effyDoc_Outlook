@@ -534,6 +534,64 @@ async def update_document_content(
         logger.error(f"Error updating document content: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/documents/{document_id}/attachment-data")
+async def generate_attachment_data(
+    document_id: str,
+    options: Dict[str, Any],
+    current_user: User = Depends(get_current_active_user)
+):
+    """Generate attachment data for document"""
+    try:
+        documents_collection = await get_collection('documents')
+        document = await documents_collection.find_one({"id": document_id})
+        
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        if document["owner_id"] != current_user.id:
+            collaborator_ids = [c.get("user_id") for c in document.get("collaborators", [])]
+            if current_user.id not in collaborator_ids:
+                raise HTTPException(status_code=403, detail="Access denied")
+        
+        # Generate tracking link
+        tracking_params = f"?source=outlook_attachment&sender={current_user.email}&timestamp={int(datetime.utcnow().timestamp())}"
+        tracking_link = f"/view/{document_id}{tracking_params}"
+        
+        # Generate HTML content
+        pages = document.get("pages", [])
+        title = document.get("title", "Document")
+        
+        html_content = f"""
+<!DOCTYPE html>
+<html><head><title>{title}</title></head>
+<body style="font-family: Arial, sans-serif; margin: 20px;">
+<h1>{title}</h1>
+"""
+        
+        for page in pages:
+            page_title = page.get("title", "")
+            page_content = page.get("content", "")
+            html_content += f"<h2>{page_title}</h2><div>{page_content}</div>"
+        
+        html_content += f"""
+<footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc;">
+<p><a href="{tracking_link}">View online version</a></p>
+<p>Powered by effyDOC</p>
+</footer>
+</body></html>
+"""
+        
+        return {
+            "document_id": document_id,
+            "filename": f"{title}.html",
+            "content": html_content,
+            "tracking_link": tracking_link
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating attachment: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/status")
 async def outlook_addin_status():
     """Health check and status for Outlook add-in"""
