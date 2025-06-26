@@ -1,0 +1,42 @@
+effyDOC Outlook Add-in
+End User License Agreement
+
+Copyright (c) 2025 effyDOC. All rights reserved.
+
+This End User License Agreement ("Agreement") is a legal agreement between you (either an individual or a single entity) and effyDOC for the effyDOC Outlook Add-in software product, which includes computer software and may include associated media, printed materials, and "online" or electronic documentation ("Software").
+
+By installing, copying, or otherwise using the Software, you agree to be bound by the terms of this Agreement. If you do not agree to the terms of this Agreement, do not install or use the Software.
+
+GRANT OF LICENSE
+effyDOC grants you the following rights provided that you comply with all terms and conditions of this Agreement:
+
+1. You may install and use the Software on multiple computers.
+2. You may make backup copies of the Software for archival purposes.
+
+DESCRIPTION OF OTHER RIGHTS AND LIMITATIONS
+
+1. You may not reverse engineer, decompile, or disassemble the Software.
+2. You may not rent, lease, or lend the Software.
+3. You may not use the Software for any illegal purposes.
+
+TERMINATION
+Without prejudice to any other rights, effyDOC may terminate this Agreement if you fail to comply with the terms and conditions of this Agreement.
+
+DISCLAIMER OF WARRANTY
+The Software is provided "AS IS" without warranty of any kind. effyDOC disclaims all warranties, either express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, and non-infringement.
+
+LIMITATION OF LIABILITY
+In no event shall effyDOC be liable for any damages whatsoever arising out of the use of or inability to use this Software.
+
+DATA COLLECTION AND PRIVACY
+The Software may collect usage analytics and document tracking data as described in our Privacy Policy. By using the Software, you consent to such data collection for the purpose of providing document tracking services.
+
+UPDATES AND MODIFICATIONS
+effyDOC reserves the right to update or modify the Software and this Agreement at any time. Continued use of the Software after such changes constitutes acceptance of the new terms.
+
+This Agreement shall be governed by the laws of the jurisdiction in which effyDOC operates.
+
+For support and more information, visit:
+https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com
+
+Thank you for choosing effyDOC!
