@@ -497,6 +497,43 @@ async def get_document_content(
         logger.error(f"Error getting document content: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.put("/documents/{document_id}/content")
+async def update_document_content(
+    document_id: str,
+    content_data: Dict[str, Any],
+    current_user: User = Depends(get_current_active_user)
+):
+    """Update document content from Outlook add-in"""
+    try:
+        documents_collection = await get_collection('documents')
+        document = await documents_collection.find_one({"id": document_id})
+        
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        if document["owner_id"] != current_user.id:
+            raise HTTPException(status_code=403, detail="Edit access denied")
+        
+        update_fields = {}
+        if "title" in content_data:
+            update_fields["title"] = content_data["title"]
+        if "pages" in content_data:
+            update_fields["pages"] = content_data["pages"]
+            update_fields["total_pages"] = len(content_data["pages"])
+        
+        update_fields["updated_at"] = datetime.utcnow()
+        
+        result = await documents_collection.update_one(
+            {"id": document_id},
+            {"$set": update_fields}
+        )
+        
+        return {"message": "Document updated successfully", "document_id": document_id}
+        
+    except Exception as e:
+        logger.error(f"Error updating document content: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/status")
 async def outlook_addin_status():
     """Health check and status for Outlook add-in"""
