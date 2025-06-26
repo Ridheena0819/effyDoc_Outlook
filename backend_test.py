@@ -141,8 +141,65 @@ def test_outlook_addin_integration():
     
     print("✅ Get content hub documents for Outlook working")
     
-    # 7. Test generating a trackable link for a document
-    print("\n7. Testing generate trackable link for document...")
+    # 7. Test getting document content for preview/editing
+    print("\n7. Testing get document content for preview/editing...")
+    response = requests.get(f"{base_url}/outlook/documents/{test_document_id}/content", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "id" in data, "Missing id in response"
+    assert data["id"] == test_document_id, f"Expected {test_document_id}, got {data['id']}"
+    assert "title" in data, "Missing title in response"
+    assert "type" in data, "Missing type in response"
+    assert "pages" in data, "Missing pages in response"
+    assert "sections" in data, "Missing sections in response"
+    assert "can_edit" in data, "Missing can_edit in response"
+    assert data["can_edit"] == True, "Expected can_edit to be True for document owner"
+    
+    print("✅ Get document content for preview/editing working")
+    
+    # 8. Test updating document content
+    print("\n8. Testing update document content...")
+    content_update = {
+        "title": "Updated Outlook Document Title",
+        "pages": [
+            {
+                "id": str(uuid.uuid4()),
+                "page_number": 1,
+                "title": "Updated Introduction",
+                "content": "<p>This is updated content for testing the Outlook add-in.</p>"
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "page_number": 2,
+                "title": "Updated Features",
+                "content": "<p>These are updated features for testing the Outlook add-in.</p>"
+            }
+        ]
+    }
+    
+    response = requests.put(f"{base_url}/outlook/documents/{test_document_id}/content", json=content_update, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "message" in data, "Missing message in response"
+    assert "document_id" in data, "Missing document_id in response"
+    assert data["document_id"] == test_document_id, f"Expected {test_document_id}, got {data['document_id']}"
+    
+    # Verify the update was successful
+    response = requests.get(f"{base_url}/outlook/documents/{test_document_id}/content", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    assert data["title"] == "Updated Outlook Document Title", f"Expected 'Updated Outlook Document Title', got {data['title']}"
+    assert len(data["pages"]) == 2, f"Expected 2 pages, got {len(data['pages'])}"
+    
+    print("✅ Update document content working")
+    
+    # 9. Test generating a trackable link for a document
+    print("\n9. Testing generate trackable link for document...")
     response = requests.get(f"{base_url}/outlook/documents/{test_document_id}/share-link", headers=headers)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}"
     data = response.json()
@@ -160,8 +217,32 @@ def test_outlook_addin_integration():
     trackable_link = data["trackable_link"]
     print("✅ Generate trackable link for document working")
     
-    # 8. Test tracking email sent event
-    print("\n8. Testing track email sent event...")
+    # 10. Test generating attachment data
+    print("\n10. Testing generate attachment data...")
+    options = {
+        "include_tracking": True,
+        "format": "html"
+    }
+    
+    response = requests.post(f"{base_url}/outlook/documents/{test_document_id}/attachment-data", json=options, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "document_id" in data, "Missing document_id in response"
+    assert data["document_id"] == test_document_id, f"Expected {test_document_id}, got {data['document_id']}"
+    assert "filename" in data, "Missing filename in response"
+    assert "content" in data, "Missing content in response"
+    assert "tracking_link" in data, "Missing tracking_link in response"
+    
+    # Verify HTML content contains tracking link
+    assert "View online version" in data["content"], "Missing 'View online version' link in HTML content"
+    assert data["tracking_link"] in data["content"], "Tracking link not found in HTML content"
+    
+    print("✅ Generate attachment data working")
+    
+    # 11. Test tracking email sent event
+    print("\n11. Testing track email sent event...")
     email_tracking_data = {
         "document_id": test_document_id,
         "recipients": ["recipient1@example.com", "recipient2@example.com"],
@@ -182,8 +263,8 @@ def test_outlook_addin_integration():
     tracking_id = data["tracking_id"]
     print("✅ Track email sent event working")
     
-    # 9. Test tracking document events
-    print("\n9. Testing track document events...")
+    # 12. Test tracking document events
+    print("\n12. Testing track document events...")
     
     # Test email opened event
     event_data = {
@@ -244,8 +325,8 @@ def test_outlook_addin_integration():
     
     print("✅ Track document events working")
     
-    # 10. Test getting live tracking metrics
-    print("\n10. Testing get live tracking metrics...")
+    # 13. Test getting live tracking metrics
+    print("\n13. Testing get live tracking metrics...")
     response = requests.get(f"{base_url}/outlook/tracking/live-metrics/{test_document_id}", headers=headers)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}"
     data = response.json()
@@ -264,8 +345,8 @@ def test_outlook_addin_integration():
     
     print("✅ Get live tracking metrics working")
     
-    # 11. Test getting document analytics for Outlook
-    print("\n11. Testing get document analytics for Outlook...")
+    # 14. Test getting document analytics for Outlook
+    print("\n14. Testing get document analytics for Outlook...")
     response = requests.get(f"{base_url}/outlook/tracking/document-analytics/{test_document_id}", headers=headers)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}"
     data = response.json()
@@ -284,87 +365,6 @@ def test_outlook_addin_integration():
     assert "unique_viewers" in data["summary"], "Missing unique_viewers in summary"
     
     print("✅ Get document analytics for Outlook working")
-    
-    # 12. Test getting document content for preview/editing
-    print("\n12. Testing get document content for preview/editing...")
-    response = requests.get(f"{base_url}/outlook/documents/{test_document_id}/content", headers=headers)
-    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
-    data = response.json()
-    
-    # Verify response structure
-    assert "id" in data, "Missing id in response"
-    assert data["id"] == test_document_id, f"Expected {test_document_id}, got {data['id']}"
-    assert "title" in data, "Missing title in response"
-    assert "type" in data, "Missing type in response"
-    assert "pages" in data, "Missing pages in response"
-    assert "sections" in data, "Missing sections in response"
-    assert "can_edit" in data, "Missing can_edit in response"
-    assert data["can_edit"] == True, "Expected can_edit to be True for document owner"
-    
-    print("✅ Get document content for preview/editing working")
-    
-    # 13. Test updating document content
-    print("\n13. Testing update document content...")
-    content_update = {
-        "title": "Updated Outlook Document Title",
-        "pages": [
-            {
-                "id": str(uuid.uuid4()),
-                "page_number": 1,
-                "title": "Updated Introduction",
-                "content": "<p>This is updated content for testing the Outlook add-in.</p>"
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "page_number": 2,
-                "title": "Updated Features",
-                "content": "<p>These are updated features for testing the Outlook add-in.</p>"
-            }
-        ]
-    }
-    
-    response = requests.put(f"{base_url}/outlook/documents/{test_document_id}/content", json=content_update, headers=headers)
-    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
-    data = response.json()
-    
-    # Verify response structure
-    assert "message" in data, "Missing message in response"
-    assert "document_id" in data, "Missing document_id in response"
-    assert data["document_id"] == test_document_id, f"Expected {test_document_id}, got {data['document_id']}"
-    
-    # Verify the update was successful
-    response = requests.get(f"{base_url}/outlook/documents/{test_document_id}/content", headers=headers)
-    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
-    data = response.json()
-    
-    assert data["title"] == "Updated Outlook Document Title", f"Expected 'Updated Outlook Document Title', got {data['title']}"
-    assert len(data["pages"]) == 2, f"Expected 2 pages, got {len(data['pages'])}"
-    
-    print("✅ Update document content working")
-    
-    # 14. Test generating attachment data
-    print("\n14. Testing generate attachment data...")
-    options = {
-        "include_tracking": True,
-        "format": "html"
-    }
-    
-    response = requests.post(f"{base_url}/outlook/documents/{test_document_id}/attachment-data", json=options, headers=headers)
-    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
-    data = response.json()
-    
-    # Verify response structure
-    assert "document_id" in data, "Missing document_id in response"
-    assert data["document_id"] == test_document_id, f"Expected {test_document_id}, got {data['document_id']}"
-    assert "filename" in data, "Missing filename in response"
-    assert "content" in data, "Missing content in response"
-    assert "tracking_link" in data, "Missing tracking_link in response"
-    
-    # Verify HTML content contains tracking link
-    assert "View online version" in data["content"], "Missing 'View online version' link in HTML content"
-    assert data["tracking_link"] in data["content"], "Tracking link not found in HTML content"
-    
-    print("✅ Generate attachment data working")
     
     # 15. Test WebSocket connection (in a separate thread to avoid blocking)
     print("\n15. Testing WebSocket connection...")
@@ -655,9 +655,243 @@ def test_outlook_addin_access_control():
     
     print("✅ All access control tests passed successfully!")
 
+def test_outlook_addin_workflow():
+    """Test complete user workflows for Outlook Add-in"""
+    print("\nStarting Outlook Add-in workflow tests...")
+    
+    # Test variables
+    base_url = BACKEND_URL
+    headers = {"Content-Type": "application/json"}
+    
+    # Workflow A: First-Time User Setup
+    print("\nWorkflow A: First-Time User Setup")
+    
+    # 1. Register new user account
+    print("1. Registering new user...")
+    test_user_email = f"workflow.user.{uuid.uuid4()}@example.com"
+    test_user_password = "SecurePassword123!"
+    
+    user_data = {
+        "email": test_user_email,
+        "full_name": "Workflow Test User",
+        "role": "editor",
+        "organization": "Workflow Test Org",
+        "password": test_user_password
+    }
+    
+    response = requests.post(f"{base_url}/auth/register", json=user_data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Save token for subsequent tests
+    access_token = data["access_token"]
+    headers["Authorization"] = f"Bearer {access_token}"
+    print("✅ User registration successful")
+    
+    # 2. Login via Outlook add-in authentication
+    print("2. Testing Outlook add-in authentication...")
+    response = requests.get(f"{base_url}/outlook/user/session-info", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    print("✅ Outlook add-in authentication successful")
+    
+    # 3. Browse empty document libraries
+    print("3. Browsing document libraries...")
+    response = requests.get(f"{base_url}/outlook/documents/my-library", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    assert len(response.json()["documents"]) == 0, "Expected empty document library"
+    
+    response = requests.get(f"{base_url}/outlook/documents/content-hub", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    print("✅ Empty document libraries browsed successfully")
+    
+    # 4. Create first test document
+    print("4. Creating first document...")
+    document_data = {
+        "title": "My First Document",
+        "type": "proposal",
+        "organization": "Workflow Test Org",
+        "sections": [
+            {
+                "title": "Introduction",
+                "content": "This is my first document created through the Outlook add-in.",
+                "order": 1
+            }
+        ],
+        "tags": ["first", "test"],
+        "metadata": {"source": "outlook_addin"}
+    }
+    
+    response = requests.post(f"{base_url}/documents", json=document_data, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    document_id = response.json()["id"]
+    print(f"✅ First document created with ID: {document_id}")
+    
+    # 5. Generate trackable links and attachments
+    print("5. Generating trackable link...")
+    response = requests.get(f"{base_url}/outlook/documents/{document_id}/share-link", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    trackable_link = response.json()["trackable_link"]
+    
+    print("6. Generating trackable attachment...")
+    options = {
+        "include_tracking": True,
+        "format": "html"
+    }
+    
+    response = requests.post(f"{base_url}/outlook/documents/{document_id}/attachment-data", json=options, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    print("✅ Trackable links and attachments generated successfully")
+    
+    # Workflow B: Document Sharing & Tracking
+    print("\nWorkflow B: Document Sharing & Tracking")
+    
+    # 1. Browse My Library
+    print("1. Browsing My Library...")
+    response = requests.get(f"{base_url}/outlook/documents/my-library", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    assert len(response.json()["documents"]) > 0, "Expected non-empty document library"
+    print("✅ My Library browsed successfully")
+    
+    # 2. Select document and test preview functionality
+    print("2. Testing document preview...")
+    response = requests.get(f"{base_url}/outlook/documents/{document_id}/content", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    print("✅ Document preview working")
+    
+    # 3. Edit document content via Outlook add-in
+    print("3. Editing document content...")
+    content_update = {
+        "title": "My Updated Document",
+        "pages": [
+            {
+                "id": str(uuid.uuid4()),
+                "page_number": 1,
+                "title": "Updated Introduction",
+                "content": "<p>This is my updated document content for testing tracking.</p>"
+            }
+        ]
+    }
+    
+    response = requests.put(f"{base_url}/outlook/documents/{document_id}/content", json=content_update, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    print("✅ Document content updated successfully")
+    
+    # 4. Generate HTML trackable attachment
+    print("4. Generating HTML trackable attachment...")
+    options = {
+        "include_tracking": True,
+        "format": "html"
+    }
+    
+    response = requests.post(f"{base_url}/outlook/documents/{document_id}/attachment-data", json=options, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    print("✅ HTML trackable attachment generated successfully")
+    
+    # 5. Track email sent event
+    print("5. Tracking email sent event...")
+    email_tracking_data = {
+        "document_id": document_id,
+        "recipients": ["recipient1@example.com", "recipient2@example.com"],
+        "subject": "Please review my document",
+        "email_body": "I've attached a document for your review."
+    }
+    
+    response = requests.post(f"{base_url}/outlook/tracking/email-sent", json=email_tracking_data, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    print("✅ Email sent event tracked successfully")
+    
+    # 6. Simulate recipient interactions
+    print("6. Simulating recipient interactions...")
+    
+    # Email open
+    event_data = {
+        "event_type": "email_opened",
+        "document_id": document_id,
+        "recipient_email": "recipient1@example.com",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "ip_address": "192.168.1.1"
+    }
+    
+    response = requests.post(f"{base_url}/outlook/tracking/event", json=event_data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # Link click
+    event_data = {
+        "event_type": "link_clicked",
+        "document_id": document_id,
+        "recipient_email": "recipient1@example.com",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "ip_address": "192.168.1.1"
+    }
+    
+    response = requests.post(f"{base_url}/outlook/tracking/event", json=event_data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # Page view
+    event_data = {
+        "event_type": "page_viewed",
+        "document_id": document_id,
+        "recipient_email": "recipient1@example.com",
+        "page_number": 1,
+        "duration": 45,
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "ip_address": "192.168.1.1"
+    }
+    
+    response = requests.post(f"{base_url}/outlook/tracking/event", json=event_data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # Currently reading
+    event_data = {
+        "event_type": "currently_reading",
+        "document_id": document_id,
+        "recipient_email": "recipient1@example.com",
+        "page_number": 1,
+        "duration": 30,
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "ip_address": "192.168.1.1"
+    }
+    
+    response = requests.post(f"{base_url}/outlook/tracking/event", json=event_data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    print("✅ Recipient interactions simulated successfully")
+    
+    # 7. Verify real-time tracking metrics update
+    print("7. Verifying real-time tracking metrics...")
+    response = requests.get(f"{base_url}/outlook/tracking/live-metrics/{document_id}", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    assert data["today_stats"]["emails_opened"] >= 1, "Expected at least 1 email opened"
+    assert data["today_stats"]["links_clicked"] >= 1, "Expected at least 1 link clicked"
+    assert data["today_stats"]["page_views"] >= 1, "Expected at least 1 page view"
+    print("✅ Real-time tracking metrics verified successfully")
+    
+    # 8. Test comprehensive analytics
+    print("8. Testing comprehensive analytics...")
+    response = requests.get(f"{base_url}/outlook/tracking/document-analytics/{document_id}", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    assert data["summary"]["total_emails_sent"] >= 1, "Expected at least 1 email sent"
+    assert data["summary"]["total_opens"] >= 1, "Expected at least 1 email opened"
+    assert data["summary"]["total_clicks"] >= 1, "Expected at least 1 link clicked"
+    print("✅ Comprehensive analytics verified successfully")
+    
+    # Clean up
+    print("\nCleaning up test document...")
+    response = requests.delete(f"{base_url}/documents/{document_id}", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    print("✅ Test document deleted successfully")
+    
+    print("\n✅ All Outlook Add-in workflow tests passed successfully!")
+
 if __name__ == "__main__":
     # Run the Outlook Add-in integration tests
     test_outlook_addin_integration()
     
     # Run the access control tests
     test_outlook_addin_access_control()
+    
+    # Run the workflow tests
+    test_outlook_addin_workflow()
