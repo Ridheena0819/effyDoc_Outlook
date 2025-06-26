@@ -110,7 +110,7 @@ const TaskPane: React.FC = () => {
     toast.success('Logged out successfully');
   };
 
-  const handleDocumentSelect = (document: Document) => {
+  const handleDocumentSelect = (document: BaseDocument) => {
     setSelectedDocument(document);
     setActiveTab('tracking');
     toast.success(`Tracking ${document.title}`);
