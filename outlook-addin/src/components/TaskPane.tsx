@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { authAPI } from '../services/api';
+import { authAPI } from '../services/api.ts';
 import DocumentLibrary from './DocumentLibrary.tsx';
 import ContentHub from './ContentHub.tsx';
 import LiveTracking from './LiveTracking.tsx';
