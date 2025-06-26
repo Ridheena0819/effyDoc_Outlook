@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import TaskPane from './components/TaskPane.tsx';
+import TaskPane from './components/TaskPane';
 import './index.css';
 
 const root = ReactDOM.createRoot(
