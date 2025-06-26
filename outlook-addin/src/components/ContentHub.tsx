@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { documentsAPI } from '../services/api';
+import { documentsAPI } from '../services/api.ts';
 import { 
   Building, 
   FileText, 
