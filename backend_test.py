@@ -285,8 +285,89 @@ def test_outlook_addin_integration():
     
     print("✅ Get document analytics for Outlook working")
     
-    # 12. Test WebSocket connection (in a separate thread to avoid blocking)
-    print("\n12. Testing WebSocket connection...")
+    # 12. Test getting document content for preview/editing
+    print("\n12. Testing get document content for preview/editing...")
+    response = requests.get(f"{base_url}/outlook/documents/{test_document_id}/content", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "id" in data, "Missing id in response"
+    assert data["id"] == test_document_id, f"Expected {test_document_id}, got {data['id']}"
+    assert "title" in data, "Missing title in response"
+    assert "type" in data, "Missing type in response"
+    assert "pages" in data, "Missing pages in response"
+    assert "sections" in data, "Missing sections in response"
+    assert "can_edit" in data, "Missing can_edit in response"
+    assert data["can_edit"] == True, "Expected can_edit to be True for document owner"
+    
+    print("✅ Get document content for preview/editing working")
+    
+    # 13. Test updating document content
+    print("\n13. Testing update document content...")
+    content_update = {
+        "title": "Updated Outlook Document Title",
+        "pages": [
+            {
+                "id": str(uuid.uuid4()),
+                "page_number": 1,
+                "title": "Updated Introduction",
+                "content": "<p>This is updated content for testing the Outlook add-in.</p>"
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "page_number": 2,
+                "title": "Updated Features",
+                "content": "<p>These are updated features for testing the Outlook add-in.</p>"
+            }
+        ]
+    }
+    
+    response = requests.put(f"{base_url}/outlook/documents/{test_document_id}/content", json=content_update, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "message" in data, "Missing message in response"
+    assert "document_id" in data, "Missing document_id in response"
+    assert data["document_id"] == test_document_id, f"Expected {test_document_id}, got {data['document_id']}"
+    
+    # Verify the update was successful
+    response = requests.get(f"{base_url}/outlook/documents/{test_document_id}/content", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    assert data["title"] == "Updated Outlook Document Title", f"Expected 'Updated Outlook Document Title', got {data['title']}"
+    assert len(data["pages"]) == 2, f"Expected 2 pages, got {len(data['pages'])}"
+    
+    print("✅ Update document content working")
+    
+    # 14. Test generating attachment data
+    print("\n14. Testing generate attachment data...")
+    options = {
+        "include_tracking": True,
+        "format": "html"
+    }
+    
+    response = requests.post(f"{base_url}/outlook/documents/{test_document_id}/attachment-data", json=options, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "document_id" in data, "Missing document_id in response"
+    assert data["document_id"] == test_document_id, f"Expected {test_document_id}, got {data['document_id']}"
+    assert "filename" in data, "Missing filename in response"
+    assert "content" in data, "Missing content in response"
+    assert "tracking_link" in data, "Missing tracking_link in response"
+    
+    # Verify HTML content contains tracking link
+    assert "View online version" in data["content"], "Missing 'View online version' link in HTML content"
+    assert data["tracking_link"] in data["content"], "Tracking link not found in HTML content"
+    
+    print("✅ Generate attachment data working")
+    
+    # 15. Test WebSocket connection (in a separate thread to avoid blocking)
+    print("\n15. Testing WebSocket connection...")
     
     # Define WebSocket test function
     def test_websocket():
@@ -361,14 +442,214 @@ def test_outlook_addin_integration():
         print("⚠️ websocket-client library not available. Skipping WebSocket test.")
         print("To run this test, install the required library: pip install websocket-client")
     
-    # 13. Clean up (delete test document)
-    print("\n13. Cleaning up test document...")
+    # 16. Test complete attachment workflow
+    print("\n16. Testing complete attachment workflow...")
+    
+    # Step 1: Get document content
+    response = requests.get(f"{base_url}/outlook/documents/{test_document_id}/content", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    document_content = response.json()
+    
+    # Step 2: Update document content (optional)
+    content_update = {
+        "title": document_content["title"],
+        "pages": [
+            {
+                "id": str(uuid.uuid4()) if "id" not in document_content["pages"][0] else document_content["pages"][0]["id"],
+                "page_number": 1,
+                "title": "Final Introduction",
+                "content": "<p>This is the final content for the attachment workflow test.</p>"
+            }
+        ]
+    }
+    
+    response = requests.put(f"{base_url}/outlook/documents/{test_document_id}/content", json=content_update, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # Step 3: Generate attachment data
+    options = {
+        "include_tracking": True,
+        "format": "html"
+    }
+    
+    response = requests.post(f"{base_url}/outlook/documents/{test_document_id}/attachment-data", json=options, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    attachment_data = response.json()
+    
+    # Step 4: Track email sent event
+    email_tracking_data = {
+        "document_id": test_document_id,
+        "recipients": ["workflow.test@example.com"],
+        "subject": "Attachment Workflow Test",
+        "email_body": "This is a test of the complete attachment workflow."
+    }
+    
+    response = requests.post(f"{base_url}/outlook/tracking/email-sent", json=email_tracking_data, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    print("✅ Complete attachment workflow test passed")
+    
+    # 17. Clean up (delete test document)
+    print("\n17. Cleaning up test document...")
     response = requests.delete(f"{base_url}/documents/{test_document_id}", headers=headers)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}"
     print("✅ Test document deleted successfully")
     
     print("\n✅ All Outlook Add-in integration tests passed successfully!")
 
+def test_outlook_addin_access_control():
+    """Test access control for Outlook Add-in endpoints"""
+    print("\nStarting Outlook Add-in access control tests...")
+    
+    # Test variables
+    base_url = BACKEND_URL
+    headers = {"Content-Type": "application/json"}
+    
+    # Create two test users
+    test_user1_email = f"test.user1.{uuid.uuid4()}@example.com"
+    test_user2_email = f"test.user2.{uuid.uuid4()}@example.com"
+    test_password = "SecurePassword123!"
+    
+    # Register first user
+    print("\n1. Registering first test user...")
+    user1_data = {
+        "email": test_user1_email,
+        "full_name": "Test User 1",
+        "role": "editor",
+        "organization": "Test Organization",
+        "password": test_password
+    }
+    
+    response = requests.post(f"{base_url}/auth/register", json=user1_data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    user1_token = response.json()["access_token"]
+    user1_headers = headers.copy()
+    user1_headers["Authorization"] = f"Bearer {user1_token}"
+    
+    # Register second user
+    print("2. Registering second test user...")
+    user2_data = {
+        "email": test_user2_email,
+        "full_name": "Test User 2",
+        "role": "editor",
+        "organization": "Test Organization",
+        "password": test_password
+    }
+    
+    response = requests.post(f"{base_url}/auth/register", json=user2_data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    user2_token = response.json()["access_token"]
+    user2_headers = headers.copy()
+    user2_headers["Authorization"] = f"Bearer {user2_token}"
+    
+    # Create a document as user 1
+    print("3. Creating test document as user 1...")
+    document_data = {
+        "title": "Access Control Test Document",
+        "type": "proposal",
+        "organization": "Test Organization",
+        "sections": [
+            {
+                "title": "Introduction",
+                "content": "This is a test document for access control testing.",
+                "order": 1
+            }
+        ],
+        "tags": ["test", "access-control"],
+        "metadata": {"purpose": "testing"}
+    }
+    
+    response = requests.post(f"{base_url}/documents", json=document_data, headers=user1_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    document_id = response.json()["id"]
+    
+    # Test access control for document content endpoint
+    print("4. Testing access control for document content endpoint...")
+    
+    # User 1 (owner) should have access
+    response = requests.get(f"{base_url}/outlook/documents/{document_id}/content", headers=user1_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    assert response.json()["can_edit"] == True, "Owner should have edit permission"
+    
+    # User 2 (non-owner) should not have access
+    response = requests.get(f"{base_url}/outlook/documents/{document_id}/content", headers=user2_headers)
+    assert response.status_code == 403, f"Expected 403, got {response.status_code}"
+    
+    # Test access control for document content update endpoint
+    print("5. Testing access control for document content update endpoint...")
+    
+    content_update = {
+        "title": "Updated Title",
+        "pages": [
+            {
+                "id": str(uuid.uuid4()),
+                "page_number": 1,
+                "title": "Updated Introduction",
+                "content": "<p>This is updated content.</p>"
+            }
+        ]
+    }
+    
+    # User 1 (owner) should be able to update
+    response = requests.put(f"{base_url}/outlook/documents/{document_id}/content", json=content_update, headers=user1_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # User 2 (non-owner) should not be able to update
+    response = requests.put(f"{base_url}/outlook/documents/{document_id}/content", json=content_update, headers=user2_headers)
+    assert response.status_code == 403, f"Expected 403, got {response.status_code}"
+    
+    # Test access control for attachment data generation
+    print("6. Testing access control for attachment data generation...")
+    
+    options = {
+        "include_tracking": True,
+        "format": "html"
+    }
+    
+    # User 1 (owner) should be able to generate attachment data
+    response = requests.post(f"{base_url}/outlook/documents/{document_id}/attachment-data", json=options, headers=user1_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # User 2 (non-owner) should not be able to generate attachment data
+    response = requests.post(f"{base_url}/outlook/documents/{document_id}/attachment-data", json=options, headers=user2_headers)
+    assert response.status_code == 403, f"Expected 403, got {response.status_code}"
+    
+    # Add user 2 as a collaborator
+    print("7. Adding user 2 as a collaborator...")
+    
+    update_data = {
+        "collaborators": [
+            {
+                "user_id": user2_data["email"],  # Using email as user ID for simplicity
+                "role": "editor"
+            }
+        ]
+    }
+    
+    response = requests.put(f"{base_url}/documents/{document_id}", json=update_data, headers=user1_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # Test access after adding as collaborator
+    print("8. Testing access after adding as collaborator...")
+    
+    # User 2 should now have access to view document content
+    response = requests.get(f"{base_url}/outlook/documents/{document_id}/content", headers=user2_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # User 2 should be able to generate attachment data
+    response = requests.post(f"{base_url}/outlook/documents/{document_id}/attachment-data", json=options, headers=user2_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # Clean up
+    print("9. Cleaning up test document...")
+    response = requests.delete(f"{base_url}/documents/{document_id}", headers=user1_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    print("✅ All access control tests passed successfully!")
+
 if __name__ == "__main__":
     # Run the Outlook Add-in integration tests
     test_outlook_addin_integration()
+    
+    # Run the access control tests
+    test_outlook_addin_access_control()
