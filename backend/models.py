@@ -297,3 +297,66 @@ class AIRecommendation(BaseModel):
 
 # Update Comment model to handle recursive structure
 Comment.model_rebuild()
+
+# Outlook Add-in Specific Models
+class OutlookTrackingEvent(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    event_type: str  # "email_opened", "link_clicked", "page_viewed", "currently_reading", "email_sent"
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    document_id: str
+    user_email: Optional[str] = None
+    recipient_email: Optional[str] = None
+    page_number: Optional[int] = None
+    duration: Optional[int] = None  # seconds spent on page
+    user_agent: Optional[str] = None
+    ip_address: Optional[str] = None
+    session_id: Optional[str] = None
+    metadata: Dict[str, Any] = {}
+
+class OutlookSession(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_email: str
+    outlook_user_id: Optional[str] = None  # Microsoft Graph user ID
+    access_token: Optional[str] = None
+    refresh_token: Optional[str] = None
+    token_expires_at: Optional[datetime] = None
+    connected_at: datetime = Field(default_factory=datetime.utcnow)
+    last_activity: datetime = Field(default_factory=datetime.utcnow)
+    is_active: bool = True
+    websocket_connections: List[str] = []  # Track active WebSocket connections
+
+class DocumentLibrary(BaseModel):
+    user_email: str
+    document_type: str  # "my_library" or "content_hub"
+    documents: List[str] = []  # Document IDs
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class OutlookEmailTracking(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    document_id: str
+    sender_email: str
+    recipient_emails: List[str]
+    subject: str
+    email_body: str
+    tracking_link: str
+    sent_at: datetime = Field(default_factory=datetime.utcnow)
+    opened_at: Optional[datetime] = None
+    clicked_at: Optional[datetime] = None
+    total_opens: int = 0
+    total_clicks: int = 0
+    unique_opens: int = 0
+    unique_clicks: int = 0
+    tracking_events: List[OutlookTrackingEvent] = []
+
+class LiveTrackingMetrics(BaseModel):
+    document_id: str
+    current_readers: List[Dict[str, Any]] = []  # [{email, page, since}]
+    recent_activity: List[OutlookTrackingEvent] = []
+    today_stats: Dict[str, int] = {
+        "emails_opened": 0,
+        "links_clicked": 0, 
+        "page_views": 0,
+        "unique_viewers": 0
+    }
+    generated_at: datetime = Field(default_factory=datetime.utcnow)
