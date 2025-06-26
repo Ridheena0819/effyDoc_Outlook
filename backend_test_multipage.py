@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 
 # Get the backend URL from the frontend .env file
-BACKEND_URL = "https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/api"
+BACKEND_URL = "https://f70e6bf0-40a7-454d-8960-1649b6f10c4c.preview.emergentagent.com/api"
 
 def test_multipage_document_functionality():
     """Test the multi-page document functionality"""

@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Get the backend URL from the frontend .env file
-BACKEND_URL = "https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/api"
+BACKEND_URL = "https://f70e6bf0-40a7-454d-8960-1649b6f10c4c.preview.emergentagent.com/api"
 
 def test_document_upload_processing_pipeline():
     """Test the document upload processing pipeline for errors"""

@@ -30,7 +30,7 @@ echo [OK] Installation directory ready
 
 echo.
 echo [3/4] Downloading effyDOC add-in manifest...
-powershell -Command "& {Invoke-WebRequest -Uri 'https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/outlook-addin/manifest.xml' -OutFile '%USERPROFILE%\AppData\Roaming\Microsoft\AddIns\effydoc-manifest.xml'}"
+powershell -Command "& {Invoke-WebRequest -Uri 'https://f70e6bf0-40a7-454d-8960-1649b6f10c4c.preview.emergentagent.com/outlook-addin/manifest.xml' -OutFile '%USERPROFILE%\AppData\Roaming\Microsoft\AddIns\effydoc-manifest.xml'}"
 
 if not exist "%USERPROFILE%\AppData\Roaming\Microsoft\AddIns\effydoc-manifest.xml" (
     echo [ERROR] Failed to download manifest file!
@@ -58,7 +58,7 @@ echo 3. Sign in with your effyDOC account
 echo 4. Start tracking documents!
 echo.
 echo Need help? Visit:
-echo https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/integrations.html
+echo https://f70e6bf0-40a7-454d-8960-1649b6f10c4c.preview.emergentagent.com/integrations.html
 echo.
 
 set /p choice="Start Outlook now? (Y/N): "
