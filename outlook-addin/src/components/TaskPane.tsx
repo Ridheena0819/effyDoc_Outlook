@@ -317,6 +317,12 @@ const TaskPane: React.FC = () => {
           },
         }}
       />
+
+      {/* Attachment Workflow Modal */}
+      <AttachmentWorkflow 
+        isOpen={showAttachmentWorkflow}
+        onClose={() => setShowAttachmentWorkflow(false)}
+      />
     </div>
   );
 };
