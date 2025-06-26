@@ -1,0 +1,78 @@
+# WiX Installer Configuration for effyDOC Outlook Add-in
+# This file can be used to create a professional MSI installer
+
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" 
+           Name="effyDOC Outlook Add-in" 
+           Language="1033" 
+           Version="1.0.0.0" 
+           Manufacturer="effyDOC" 
+           UpgradeCode="12345678-1234-1234-1234-123456789012">
+    
+    <Package InstallerVersion="200" 
+             Compressed="yes" 
+             InstallScope="perUser" 
+             Description="effyDOC Document Tracker for Microsoft Outlook" 
+             Comments="Track document engagement in real-time" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Installation directory structure -->
+    <Feature Id="ProductFeature" Title="effyDOC Outlook Add-in" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+    
+    <!-- Custom actions for manifest registration -->
+    <CustomAction Id="RegisterManifest" 
+                  Execute="deferred" 
+                  Impersonate="yes"
+                  ExeCommand="[SystemFolder]reg.exe ADD &quot;HKCU\SOFTWARE\Microsoft\Office\16.0\WEF\Developer&quot; /v &quot;effyDOC&quot; /t REG_SZ /d &quot;[INSTALLFOLDER]manifest.xml&quot; /f" 
+                  Return="ignore" />
+    
+    <CustomAction Id="UnregisterManifest" 
+                  Execute="deferred" 
+                  Impersonate="yes"
+                  ExeCommand="[SystemFolder]reg.exe DELETE &quot;HKCU\SOFTWARE\Microsoft\Office\16.0\WEF\Developer&quot; /v &quot;effyDOC&quot; /f" 
+                  Return="ignore" />
+
+    <!-- Install sequence -->
+    <InstallExecuteSequence>
+      <Custom Action="RegisterManifest" After="InstallFiles">NOT Installed</Custom>
+      <Custom Action="UnregisterManifest" After="RemoveFiles">REMOVE="ALL"</Custom>
+    </InstallExecuteSequence>
+
+  </Product>
+
+  <!-- Installation directory -->
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="AppDataFolder">
+        <Directory Id="MicrosoftFolder" Name="Microsoft">
+          <Directory Id="AddInsFolder" Name="AddIns">
+            <Directory Id="INSTALLFOLDER" Name="effyDOC" />
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <!-- Components to install -->
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="ManifestComponent" Guid="*">
+        <File Id="ManifestFile" 
+              Source="manifest.xml" 
+              KeyPath="yes" 
+              Name="effydoc-manifest.xml" />
+      </Component>
+      
+      <Component Id="ReadmeComponent" Guid="*">
+        <File Id="ReadmeFile" 
+              Source="README.txt" 
+              KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
