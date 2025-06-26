@@ -3,6 +3,7 @@ import { authAPI } from '../services/api';
 import DocumentLibrary from './DocumentLibrary';
 import ContentHub from './ContentHub';
 import LiveTracking from './LiveTracking';
+import AttachmentWorkflow from './AttachmentWorkflow';
 import { 
   FolderOpen, 
   Building, 
@@ -11,7 +12,8 @@ import {
   User, 
   Wifi, 
   WifiOff,
-  Settings
+  Settings,
+  Paperclip
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
