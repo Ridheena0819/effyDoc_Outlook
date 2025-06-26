@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { documentsAPI, trackingAPI } from '../services/api.ts';
+import { documentsAPI, trackingAPI } from '../services/api';
 import { 
   FileText, 
   Send, 
