@@ -73,6 +73,21 @@ export const documentsAPI = {
   generateTrackableLink: async (documentId: string) => {
     const response = await apiClient.get(`/api/outlook/documents/${documentId}/share-link`);
     return response.data;
+  },
+
+  getDocumentContent: async (documentId: string) => {
+    const response = await apiClient.get(`/api/outlook/documents/${documentId}/content`);
+    return response.data;
+  },
+
+  updateDocumentContent: async (documentId: string, contentData: any) => {
+    const response = await apiClient.put(`/api/outlook/documents/${documentId}/content`, contentData);
+    return response.data;
+  },
+
+  generateAttachmentData: async (documentId: string, options: any) => {
+    const response = await apiClient.post(`/api/outlook/documents/${documentId}/attachment-data`, options);
+    return response.data;
   }
 };
 
