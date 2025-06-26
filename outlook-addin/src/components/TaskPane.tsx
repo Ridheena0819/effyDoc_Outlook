@@ -216,6 +216,15 @@ const TaskPane: React.FC = () => {
           </div>
           
           <div className="flex items-center space-x-2">
+            {/* Attach Document Button */}
+            <button
+              onClick={() => setShowAttachmentWorkflow(true)}
+              className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              title="Attach Document"
+            >
+              <Paperclip className="w-4 h-4" />
+            </button>
+            
             <div className="text-right">
               <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
               <p className="text-xs text-gray-500">{user?.organization}</p>
