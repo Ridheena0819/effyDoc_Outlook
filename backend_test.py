@@ -620,10 +620,15 @@ def test_outlook_addin_access_control():
     # Add user 2 as a collaborator
     print("7. Adding user 2 as a collaborator...")
     
+    # First, get the user ID for user 2
+    response = requests.get(f"{base_url}/users/me", headers=user2_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    user2_id = response.json()["id"]
+    
     update_data = {
         "collaborators": [
             {
-                "user_id": user2_data["email"],  # Using email as user ID for simplicity
+                "user_id": user2_id,
                 "role": "editor"
             }
         ]
