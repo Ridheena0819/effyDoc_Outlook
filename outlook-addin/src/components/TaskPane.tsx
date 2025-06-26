@@ -15,6 +15,16 @@ import {
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
+interface BaseDocument {
+  id: string;
+  title: string;
+  type: string;
+  created_at: string;
+  total_pages: number;
+  share_link: string;
+  is_trackable: boolean;
+}
+
 interface User {
   user_email: string;
   full_name: string;
@@ -22,24 +32,12 @@ interface User {
   role: string;
 }
 
-interface Document {
-  id: string;
-  title: string;
-  type: string;
-  created_at: string;
-  total_pages: number;
-  file_size: number;
-  tracking_stats: any;
-  share_link: string;
-  is_trackable: boolean;
-}
-
 const TaskPane: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'library' | 'hub' | 'tracking'>('library');
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<BaseDocument | null>(null);
   const [loginCredentials, setLoginCredentials] = useState({ email: '', password: '' });
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
