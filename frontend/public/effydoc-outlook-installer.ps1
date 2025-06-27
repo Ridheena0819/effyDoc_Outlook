@@ -43,7 +43,7 @@ function Install-EffyDocAddin {
         # Download manifest file
         Write-Host "📥 Downloading effyDOC add-in manifest..." -ForegroundColor Yellow
         
-        $manifestUrl = "https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/outlook-addin/manifest.xml"
+        $manifestUrl = "https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/outlook-addin/manifest.xml"
         $tempPath = "$env:TEMP\effydoc-manifest.xml"
         
         try {
@@ -91,7 +91,7 @@ function Install-EffyDocAddin {
         Write-Host "3. Sign in with your effyDOC account credentials" -ForegroundColor White
         Write-Host "4. Start tracking your documents!" -ForegroundColor White
         Write-Host ""
-        Write-Host "🔗 Need help? Visit: https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/integrations.html" -ForegroundColor Cyan
+        Write-Host "🔗 Need help? Visit: https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/integrations.html" -ForegroundColor Cyan
         Write-Host ""
         
         # Ask if user wants to start Outlook

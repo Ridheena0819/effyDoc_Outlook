@@ -90,7 +90,7 @@ function Test-OutlookInstallation {
 function Download-Manifest {
     Write-Status "Downloading effyDOC add-in manifest..."
     
-    $manifestUrl = "https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/outlook-addin/manifest.xml"
+    $manifestUrl = "https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/outlook-addin/manifest.xml"
     $tempPath = "$env:TEMP\effydoc-manifest-$(Get-Random).xml"
     
     try {
@@ -192,8 +192,8 @@ Troubleshooting:
 • Verify internet connection for real-time features
 
 Support Resources:
-• Integration Guide: https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/integrations.html
-• Platform Dashboard: https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com
+• Integration Guide: https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/integrations.html
+• Platform Dashboard: https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com
 • Help Documentation: Available in the add-in interface
 
 Thank you for choosing effyDOC! 🚀

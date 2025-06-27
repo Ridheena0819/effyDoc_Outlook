@@ -22,15 +22,15 @@
   <Description DefaultValue="Track document engagement in real-time directly from Outlook. Send trackable documents and see when recipients open, click, and read them."/>
   
   <!-- Icon URLs -->
-  <IconUrl DefaultValue="https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/icon-64.png"/>
+  <IconUrl DefaultValue="https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/icon-64.png"/>
   
   <!-- Support URL -->
   <SupportUrl DefaultValue="https://effydoc.com/support"/>
   
   <!-- App Domains -->
   <AppDomains>
-    <AppDomain>https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com</AppDomain>
+    <AppDomain>https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com</AppDomain>
   </AppDomains>
   
   <!-- Hosts -->
@@ -49,13 +49,13 @@
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/outlook-addin/"/>
+        <SourceLocation DefaultValue="https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/outlook-addin/"/>
         <RequestedHeight>500</RequestedHeight>
       </DesktopSettings>
     </Form>
     <Form xsi:type="ItemEdit">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/outlook-addin/"/>
+        <SourceLocation DefaultValue="https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/outlook-addin/"/>
         <RequestedHeight>500</RequestedHeight>
       </DesktopSettings>
     </Form>

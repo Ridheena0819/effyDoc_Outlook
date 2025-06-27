@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 # Get the backend URL from the frontend .env file
-BACKEND_URL = "https://54f44f8f-6cf4-4842-bf49-6bd490d293fd.preview.emergentagent.com/api"
+BACKEND_URL = "https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/api"
 
 def test_document_upload_comprehensive():
     """Comprehensive test of the document upload endpoint with different file types and parameters"""
