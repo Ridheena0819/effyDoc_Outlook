@@ -71,15 +71,15 @@
                     <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                         <div class="flex items-center text-sm text-green-700">
                             <span class="text-lg mr-2">🚀</span>
-                            <strong>NEW: Easy Installer Available!</strong>
+                            <strong>FIXED: Manifest Now Works with edoc.effybiz.com!</strong>
                         </div>
                         <p class="text-xs text-green-600 mt-1">
-                            Download our automated installer (.bat) for one-click installation, or use the traditional manifest file (.xml)
+                            Download the corrected manifest file configured for your domain
                         </p>
                     </div>
 
                     <button onclick="downloadOutlookAddin()" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                        📥 Download Outlook Add-in
+                        📥 Download Fixed Outlook Add-in
                     </button>
                 </div>
 
@@ -141,22 +141,34 @@
 
             <!-- Installation Instructions -->
             <div class="bg-white rounded-lg shadow-lg p-8 mb-12">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">🚀 Outlook Add-in Installation</h2>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">🚀 Fixed Outlook Add-in Installation</h2>
                 
                 <div class="max-w-3xl mx-auto">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                        <div class="flex items-center text-sm text-green-700">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            <strong>✅ FIXED: Manifest installation errors resolved!</strong>
+                        </div>
+                        <p class="text-xs text-green-600 mt-1">
+                            All URLs now point to edoc.effybiz.com and required files are available
+                        </p>
+                    </div>
+                    
                     <!-- Outlook Add-in Instructions -->
                     <div class="bg-blue-50 rounded-lg p-6">
                         <h3 class="text-lg font-semibold text-blue-600 mb-4 flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
-                            Easy Installation Steps:
+                            Fixed Installation Steps:
                         </h3>
                         <ol class="space-y-3 text-sm text-gray-700">
                             <li class="flex">
                                 <span class="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">1</span>
                                 <div>
-                                    <strong>Download the manifest file</strong> using the button above
+                                    <strong>Download the corrected manifest file</strong> using the button above
                                 </div>
                             </li>
                             <li class="flex">
@@ -187,25 +199,11 @@
                         
                         <div class="mt-4 p-3 bg-blue-100 rounded border-l-4 border-blue-500">
                             <p class="text-sm text-blue-700">
-                                <strong>💡 Tip:</strong> Once installed, you'll see the effyDOC panel on the right side of Outlook with three tabs: My Library, Content Hub, and Live Tracking.
+                                <strong>💡 Tip:</strong> The corrected manifest now works with edoc.effybiz.com. All URLs and resources are properly configured!
                             </p>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Complete Package -->
-            <div class="bg-gradient-to-r from-indigo-500 to-blue-600 rounded-lg shadow-lg p-8 text-white text-center">
-                <h2 class="text-2xl font-bold mb-4">📦 Complete Outlook Add-in Package</h2>
-                <p class="text-blue-100 mb-6">
-                    Get the complete Outlook Add-in with all files, documentation, and setup guides
-                </p>
-                <button onclick="downloadCompletePackage()" class="bg-white text-indigo-600 py-3 px-8 rounded-lg hover:bg-gray-100 transition-colors font-medium text-lg">
-                    📥 Download Complete Outlook Add-in
-                </button>
-                <p class="text-blue-200 text-sm mt-4">
-                    ✅ Includes: Outlook Add-in files, manifest.xml, documentation, and installation guides
-                </p>
             </div>
 
             <!-- Back to Platform -->
@@ -222,71 +220,12 @@
 
     <script>
         function downloadOutlookAddin() {
-            // Show installer options with .exe as primary
-            const userChoice = confirm('Choose your preferred installation method:\n\nOK = Professional Installer (.exe) - RECOMMENDED\nCancel = Advanced Options');
-            
-            if (userChoice) {
-                // Check if we have a pre-built .exe, otherwise offer PowerShell script
-                downloadProfessionalInstaller();
-            } else {
-                // Show advanced options
-                showAdvancedInstallOptions();
-            }
-        }
-
-        function downloadProfessionalInstaller() {
-            // For now, download the PowerShell script that can be compiled to .exe
-            const link = document.createElement('a');
-            link.href = '/effydoc-installer.ps1';
-            link.download = 'effydoc-outlook-installer.ps1';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Show instructions
-            setTimeout(() => {
-                alert('✅ Professional Installer Downloaded!\n\n🚀 EASY INSTALLATION METHODS:\n\nMethod 1 - PowerShell (Immediate):\n1. Right-click the downloaded .ps1 file\n2. Select "Run with PowerShell"\n3. Follow the guided installation\n4. Restart Outlook when prompted\n\nMethod 2 - Convert to .EXE:\n1. Install ps2exe: Install-Module ps2exe\n2. Run: ps2exe -inputFile effydoc-installer.ps1 -outputFile installer.exe\n3. Double-click the .exe file\n\n💡 The installer will:\n• ✅ Check for Outlook installation\n• ✅ Download the latest manifest\n• ✅ Install and register automatically\n• ✅ Create desktop shortcuts\n• ✅ Provide complete setup guide\n\n🎉 Professional installation experience with progress indicators and error handling!');
-            }, 500);
-        }
-
-        function showAdvancedInstallOptions() {
-            const advancedChoice = confirm('Advanced Installation Options:\n\nOK = Download Setup Scripts (.nsi, .iss)\nCancel = Download Manifest File (.xml)');
-            
-            if (advancedChoice) {
-                // Download setup scripts for advanced users
-                downloadSetupScripts();
-            } else {
-                // Download manifest file
-                downloadManifestFile();
-            }
-        }
-
-        function downloadSetupScripts() {
-            // Download NSIS script
-            const nsisLink = document.createElement('a');
-            nsisLink.href = '/effydoc-outlook-installer.nsi';
-            nsisLink.download = 'effydoc-outlook-installer.nsi';
-            document.body.appendChild(nsisLink);
-            nsisLink.click();
-            document.body.removeChild(nsisLink);
-            
-            // Download Inno Setup script
-            setTimeout(() => {
-                const innoLink = document.createElement('a');
-                innoLink.href = '/effydoc-outlook-installer.iss';
-                innoLink.download = 'effydoc-outlook-installer.iss';
-                document.body.appendChild(innoLink);
-                innoLink.click();
-                document.body.removeChild(innoLink);
-            }, 500);
-            
-            setTimeout(() => {
-                alert('✅ Professional Setup Scripts Downloaded!\n\n🛠️ For Advanced Users:\n\nNSIS Installer (.nsi):\n1. Install NSIS (Nullsoft Scriptable Install System)\n2. Compile the .nsi script to create .exe installer\n3. Distribute the .exe to users\n\nInno Setup (.iss):\n1. Install Inno Setup\n2. Compile the .iss script to create .exe installer\n3. Professional Windows installer with modern UI\n\n📦 Both create professional .exe installers with:\n• Modern UI with progress bars\n• Automatic Outlook detection\n• Registry registration\n• Uninstaller creation\n• Desktop shortcuts\n• Error handling\n\n💡 These are the same tools used by major software companies!');
-            }, 1000);
+            // Download the corrected manifest file directly
+            downloadManifestFile();
         }
 
         function downloadManifestFile() {
-            // Download the manifest file directly
+            // Download the corrected manifest file
             const link = document.createElement('a');
             link.href = '/outlook-addin/manifest.xml';
             link.download = 'effydoc-outlook-manifest.xml';
@@ -294,9 +233,9 @@
             link.click();
             document.body.removeChild(link);
             
-            // Show instructions
+            // Show success message
             setTimeout(() => {
-                alert('✅ Outlook Add-in Manifest downloaded!\n\n📋 Manual Installation Steps:\n1. Open Outlook (Desktop or Web)\n2. Go to Get Add-ins → My Add-ins\n3. Click "Add a custom add-in" → "Add from file"\n4. Select the downloaded manifest.xml file\n5. Click "Install" and approve permissions\n\n🔗 Add-in Interface: ' + window.location.origin + '/outlook-addin/\n\n💡 The add-in will appear in your Outlook sidebar!');
+                alert('✅ FIXED Outlook Add-in Manifest downloaded!\n\n🎉 INSTALLATION ISSUES RESOLVED:\n• All URLs now point to edoc.effybiz.com\n• Required icon files are available\n• Manifest structure corrected\n\n📋 Installation Steps:\n1. Open Outlook (Desktop or Web)\n2. Go to File → Get Add-ins → My Add-ins\n3. Click "Add a custom add-in" → "Add from file"\n4. Select the downloaded manifest.xml file\n5. Click "Install" and approve permissions\n\n🔗 Add-in Interface: https://edoc.effybiz.com/outlook-addin/\n\n💡 The add-in will now install successfully and appear in your Outlook sidebar!');
             }, 500);
         }
 
@@ -312,21 +251,6 @@
             // Show success message
             setTimeout(() => {
                 alert('✅ Browser Extension downloaded successfully!\n\n📦 Installation Steps:\n\n🔧 Chrome/Edge:\n1. Extract the downloaded file\n2. Open Chrome/Edge → Extensions (chrome://extensions/)\n3. Enable "Developer Mode" (toggle in top right)\n4. Click "Load unpacked" → Select extracted folder\n5. Open Outlook Web App and start using!\n\n🦊 Firefox:\n1. Extract the downloaded file\n2. Open Firefox → Add-ons (about:addons)\n3. Click gear icon → "Install Add-on From File"\n4. Select the manifest.json from extracted folder\n\n🌐 Works with Outlook Web App at:\n• outlook.office.com\n• outlook.live.com\n• outlook.office365.com\n\n💡 The extension adds a sidebar to Outlook Web with the same features as the desktop add-in!');
-            }, 500);
-        }
-
-        function downloadCompletePackage() {
-            // This downloads the complete package
-            const link = document.createElement('a');
-            link.href = '/outlook-addin.tar.gz';
-            link.download = 'effydoc-outlook-addin-complete.tar.gz';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Show success message
-            setTimeout(() => {
-                alert('✅ Complete Outlook Add-in Package downloaded!\n\n📦 Includes:\n• Complete add-in interface files\n• Manifest.xml for installation\n• All static assets\n\n📋 Quick Setup:\n1. For simple install: Use manifest.xml directly\n2. For custom hosting: Extract and host files\n\n🔗 Add-in URL: ' + window.location.origin + '/outlook-addin/');
             }, 500);
         }
     </script>
