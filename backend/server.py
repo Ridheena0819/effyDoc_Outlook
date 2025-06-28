@@ -1332,7 +1332,9 @@ async def health_check():
 
 # Include the router in the main app
 app.include_router(api_router)
-app.include_router(outlook_native_router)  # Add Outlook add-in endpoints
+# Include Native Outlook Plugin API routes  
+from outlook_native_api import router as outlook_native_router
+app.include_router(outlook_native_router)
 
 # ==================== STARTUP/SHUTDOWN EVENTS ====================
 
