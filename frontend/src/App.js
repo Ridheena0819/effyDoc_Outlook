@@ -333,8 +333,14 @@ function App() {
               <Route path="activity" element={<Analytics />} />
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
-              <Route path="outlook-plugin-simulation" element={<OutlookPluginSimulation />} />
             </Route>
+            
+            {/* Special route for Outlook Plugin Simulation */}
+            <Route path="/outlook-plugin-simulation" element={
+              <SimulationRoute>
+                <OutlookPluginSimulation />
+              </SimulationRoute>
+            } />
 
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
