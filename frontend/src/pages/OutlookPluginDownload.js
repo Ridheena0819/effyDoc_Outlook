@@ -93,86 +93,95 @@ const OutlookPluginDownload = () => {
           </p>
         </div>
 
-        {/* Main Download Section */}
-        <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8 mb-8">
-          <div className="text-center">
-            <div className="flex justify-center mb-6">
-              <div className="bg-green-100 p-6 rounded-full">
-                <ComputerDesktopIcon className="h-16 w-16 text-green-600" />
+        {/* Download Options */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Primary Installer */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className="bg-green-100 p-4 rounded-full">
+                  <ComputerDesktopIcon className="h-12 w-12 text-green-600" />
+                </div>
               </div>
-            </div>
-            
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Ready-to-Install Plugin
-            </h2>
-            
-            <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-              Download the official effyDOC Outlook plugin installer. 
-              One-click installation with automatic configuration and setup.
-              <br />
-              <span className="text-sm text-amber-600 mt-2 block">
-                Note: Downloads as .bat file for maximum compatibility
-              </span>
-            </p>
+              
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Installer (.bat)
+              </h3>
+              
+              <p className="text-gray-600 mb-6 text-sm">
+                Download the working installer file. Right-click and "Run as Administrator" for best results.
+              </p>
 
-            {/* Download Button */}
-            {installerExists ? (
-              <button
-                onClick={handleDownloadInstaller}
-                disabled={downloadStatus === 'downloading'}
-                className="inline-flex items-center px-8 py-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
-              >
-                {downloadStatus === 'downloading' ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                    Downloading...
-                  </>
-                ) : downloadStatus === 'completed' ? (
-                  <>
-                    <CheckCircleIcon className="h-6 w-6 mr-3" />
-                    Download Complete!
-                  </>
-                ) : (
-                  <>
-                    <ArrowDownTrayIcon className="h-6 w-6 mr-3" />
-                    Download Installer (Free)
-                  </>
-                )}
-              </button>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <ExclamationTriangleIcon className="h-5 w-5 inline mr-2" />
-                  Installer not yet generated. Click below to create it.
-                </p>
-                
+              {installerExists ? (
                 <button
-                  onClick={generateInstaller}
-                  disabled={downloadStatus === 'generating'}
-                  className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                  onClick={handleDownloadInstaller}
+                  disabled={downloadStatus === 'downloading'}
+                  className="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
-                  {downloadStatus === 'generating' ? (
+                  {downloadStatus === 'downloading' ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                      Generating Installer...
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2 inline-block"></div>
+                      Downloading...
+                    </>
+                  ) : downloadStatus === 'completed' ? (
+                    <>
+                      <CheckCircleIcon className="h-5 w-5 mr-2 inline-block" />
+                      Download Complete!
                     </>
                   ) : (
                     <>
-                      <CogIcon className="h-6 w-6 mr-3" />
+                      <ArrowDownTrayIcon className="h-5 w-5 mr-2 inline-block" />
+                      Download Installer
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button
+                  onClick={generateInstaller}
+                  disabled={downloadStatus === 'generating'}
+                  className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
+                  {downloadStatus === 'generating' ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2 inline-block"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <CogIcon className="h-5 w-5 mr-2 inline-block" />
                       Generate Installer
                     </>
                   )}
                 </button>
+              )}
+            </div>
+          </div>
+
+          {/* Alternative Option */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className="bg-blue-100 p-4 rounded-full">
+                  <DocumentTextIcon className="h-12 w-12 text-blue-600" />
+                </div>
               </div>
-            )}
-            
-            {downloadStatus === 'error' && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600">
-                  Failed to generate installer. Please try again or contact support.
-                </p>
-              </div>
-            )}
+              
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Manual Setup
+              </h3>
+              
+              <p className="text-gray-600 mb-6 text-sm">
+                If the installer doesn't work, follow our step-by-step manual installation guide.
+              </p>
+
+              <a
+                href="#manual-setup"
+                className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium inline-block"
+              >
+                <InformationCircleIcon className="h-5 w-5 mr-2 inline-block" />
+                View Manual Setup
+              </a>
+            </div>
           </div>
         </div>
 
