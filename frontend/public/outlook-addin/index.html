@@ -1,1 +1,541 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#000000"/><meta name="description" content="effyDOC Outlook Add-in for document tracking"/><title>effyDOC Outlook Add-in</title><script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js" type="text/javascript"></script><style>body{margin:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:#f5f5f5}#loading{display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;color:#666}.spinner{border:4px solid #f3f3f3;border-top:4px solid #3498db;border-radius:50%;width:40px;height:40px;animation:spin 2s linear infinite;margin-bottom:20px}@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}</style><script defer="defer" src="./static/js/main.d742e110.js"></script><link href="./static/css/main.880fb0ae.css" rel="stylesheet"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"><div id="loading"><div class="spinner"></div><p>Loading effyDOC...</p></div></div></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>effyDOC Outlook Plugin</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 100%;
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .auth-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="email"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+        
+        .btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            background: #4338ca;
+        }
+        
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .features-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .feature {
+            text-align: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        
+        .feature:hover {
+            transform: translateY(-2px);
+        }
+        
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .feature-title {
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-connected {
+            background: #10b981;
+        }
+        
+        .status-disconnected {
+            background: #ef4444;
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 12px;
+            color: #dc2626;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .success-message {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 12px;
+            color: #166534;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #4f46e5;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .document-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        
+        .document-item {
+            padding: 12px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .document-item:hover {
+            background: #f8fafc;
+        }
+        
+        .document-item:last-child {
+            border-bottom: none;
+        }
+        
+        .document-title {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        
+        .document-meta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📄 effyDOC</div>
+            <div class="subtitle">Document Tracking & Analytics</div>
+        </div>
+        
+        <div id="authSection" class="auth-section">
+            <h3>Sign In to effyDOC</h3>
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            <div id="successMessage" class="success-message" style="display: none;"></div>
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="Enter your email">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+            </div>
+            
+            <button id="loginBtn" class="btn">Sign In</button>
+        </div>
+        
+        <div id="connectedSection" style="display: none;">
+            <div class="auth-section">
+                <h3>
+                    <span class="status-indicator status-connected"></span>
+                    Connected to effyDOC
+                </h3>
+                <p>Welcome back! You can now track documents directly from Outlook.</p>
+                <button id="logoutBtn" class="btn" style="background: #dc2626; margin-top: 10px;">Sign Out</button>
+            </div>
+            
+            <div class="features-section">
+                <h3>Available Features</h3>
+                <div class="features-grid">
+                    <div class="feature" onclick="openDocumentLibrary()">
+                        <div class="feature-icon">📚</div>
+                        <div class="feature-title">Document Library</div>
+                    </div>
+                    <div class="feature" onclick="openAnalytics()">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-title">Analytics</div>
+                    </div>
+                    <div class="feature" onclick="createTrackableLink()">
+                        <div class="feature-icon">🔗</div>
+                        <div class="feature-title">Trackable Links</div>
+                    </div>
+                    <div class="feature" onclick="openSettings()">
+                        <div class="feature-icon">⚙️</div>
+                        <div class="feature-title">Settings</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="features-section">
+                <h3>Recent Documents</h3>
+                <div id="documentList" class="document-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading documents...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const BACKEND_URL = 'https://62eb7680-5805-4576-a9b6-a02867b40493.preview.emergentagent.com';
+        
+        // State management
+        let authToken = null;
+        let currentUser = null;
+        
+        // Office.js initialization
+        Office.onReady((info) => {
+            console.log('Office.js ready. Host:', info.host, 'Platform:', info.platform);
+            
+            // Check if already authenticated
+            const savedToken = localStorage.getItem('effydoc_token');
+            if (savedToken) {
+                authToken = savedToken;
+                verifyTokenAndShowConnected();
+            }
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+        
+        function setupEventListeners() {
+            document.getElementById('loginBtn').addEventListener('click', handleLogin);
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            
+            // Enter key support
+            document.getElementById('password').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+        }
+        
+        async function handleLogin() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showError('Please enter both email and password');
+                return;
+            }
+            
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Signing In...';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.access_token;
+                    currentUser = data.user;
+                    localStorage.setItem('effydoc_token', authToken);
+                    localStorage.setItem('effydoc_user', JSON.stringify(currentUser));
+                    
+                    showSuccess('Successfully signed in!');
+                    setTimeout(() => {
+                        showConnectedInterface();
+                        loadRecentDocuments();
+                    }, 1000);
+                } else {
+                    showError(data.detail || 'Login failed. Please check your credentials.');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('Connection error. Please check your internet connection.');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+            }
+        }
+        
+        async function verifyTokenAndShowConnected() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/users/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    currentUser = await response.json();
+                    showConnectedInterface();
+                    loadRecentDocuments();
+                } else {
+                    // Token invalid, clear it
+                    localStorage.removeItem('effydoc_token');
+                    localStorage.removeItem('effydoc_user');
+                    authToken = null;
+                }
+            } catch (error) {
+                console.error('Token verification error:', error);
+                localStorage.removeItem('effydoc_token');
+                localStorage.removeItem('effydoc_user');
+                authToken = null;
+            }
+        }
+        
+        function handleLogout() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('effydoc_token');
+            localStorage.removeItem('effydoc_user');
+            showAuthInterface();
+        }
+        
+        function showConnectedInterface() {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('connectedSection').style.display = 'block';
+        }
+        
+        function showAuthInterface() {
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('connectedSection').style.display = 'none';
+            hideMessages();
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+        
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+        
+        async function loadRecentDocuments() {
+            const documentList = document.getElementById('documentList');
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/documents`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const documents = await response.json();
+                    displayDocuments(documents.slice(0, 5)); // Show only 5 most recent
+                } else {
+                    documentList.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">Unable to load documents</div>';
+                }
+            } catch (error) {
+                console.error('Error loading documents:', error);
+                documentList.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">Error loading documents</div>';
+            }
+        }
+        
+        function displayDocuments(documents) {
+            const documentList = document.getElementById('documentList');
+            
+            if (documents.length === 0) {
+                documentList.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">No documents found</div>';
+                return;
+            }
+            
+            documentList.innerHTML = documents.map(doc => `
+                <div class="document-item" onclick="insertDocumentLink('${doc.id}', '${doc.title.replace(/'/g, "\\'")}')">
+                    <div class="document-title">${doc.title}</div>
+                    <div class="document-meta">${doc.type} • Updated ${new Date(doc.updated_at).toLocaleDateString()}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Feature functions
+        async function insertDocumentLink(documentId, documentTitle) {
+            try {
+                // Create trackable link for the document
+                const trackingLink = `${BACKEND_URL}/view/${documentId}?source=outlook_plugin&sender=${currentUser.email}`;
+                
+                // Insert link into current email
+                Office.context.mailbox.item.body.setSelectedDataAsync(
+                    `<a href="${trackingLink}" style="color: #4f46e5; text-decoration: none;">📄 ${documentTitle}</a>`,
+                    { coercionType: Office.CoercionType.Html },
+                    (result) => {
+                        if (result.status === Office.AsyncResultStatus.Succeeded) {
+                            showSuccess('Document link inserted successfully!');
+                        } else {
+                            showError('Failed to insert document link');
+                        }
+                    }
+                );
+                
+                // Track the link insertion
+                await fetch(`${BACKEND_URL}/api/outlook-native/tracking/email-sent`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        document_id: documentId,
+                        recipients: [], // We don't have recipients info yet
+                        subject: Office.context.mailbox.item.subject || 'Email with effyDOC document'
+                    })
+                });
+            } catch (error) {
+                console.error('Error inserting document link:', error);
+                showError('Failed to insert document link');
+            }
+        }
+        
+        function openDocumentLibrary() {
+            window.open(`${BACKEND_URL}/dashboard`, '_blank');
+        }
+        
+        function openAnalytics() {
+            window.open(`${BACKEND_URL}/analytics`, '_blank');
+        }
+        
+        function createTrackableLink() {
+            showSuccess('Select a document from the list below to create a trackable link');
+        }
+        
+        function openSettings() {
+            window.open(`${BACKEND_URL}/profile`, '_blank');
+        }
+    </script>
+</body>
+</html>

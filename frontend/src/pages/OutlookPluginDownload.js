@@ -1,30 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ArrowDownTrayIcon, 
   DocumentTextIcon, 
-  CodeBracketIcon,
-  CogIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
-  ComputerDesktopIcon
+  ComputerDesktopIcon,
+  CogIcon,
+  PlayIcon,
+  CloudArrowDownIcon
 } from '@heroicons/react/24/outline';
 
 const OutlookPluginDownload = () => {
-  const [downloadType, setDownloadType] = useState('source');
+  const [downloadStatus, setDownloadStatus] = useState('ready');
+  const [installerExists, setInstallerExists] = useState(false);
 
-  const handleDownloadSource = () => {
-    // Download the actual plugin package
+  useEffect(() => {
+    // Check if installer exists
+    checkInstallerAvailability();
+  }, []);
+
+  const checkInstallerAvailability = async () => {
+    try {
+      const response = await fetch('/EffyDocOutlookPlugin-Setup.exe', { method: 'HEAD' });
+      setInstallerExists(response.ok);
+    } catch (error) {
+      setInstallerExists(false);
+    }
+  };
+
+  const handleDownloadInstaller = () => {
+    setDownloadStatus('downloading');
+    
+    // Create download link
     const link = document.createElement('a');
-    link.href = '/outlook-plugin-package.tar.gz';
-    link.download = 'effydoc-outlook-plugin-source.tar.gz';
+    link.href = '/EffyDocOutlookPlugin-Setup.exe';
+    link.download = 'EffyDocOutlookPlugin-Setup.exe';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // Reset status after a delay
+    setTimeout(() => {
+      setDownloadStatus('completed');
+    }, 2000);
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
+  const generateInstaller = async () => {
+    setDownloadStatus('generating');
+    
+    try {
+      // Call the build script endpoint (you'll need to create this)
+      const response = await fetch('/api/build-outlook-installer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          version: '1.0.0',
+          backendURL: process.env.REACT_APP_BACKEND_URL || window.location.origin
+        })
+      });
+      
+      if (response.ok) {
+        setInstallerExists(true);
+        setDownloadStatus('ready');
+      } else {
+        setDownloadStatus('error');
+      }
+    } catch (error) {
+      console.error('Error generating installer:', error);
+      setDownloadStatus('error');
+    }
   };
 
   return (
@@ -41,112 +88,131 @@ const OutlookPluginDownload = () => {
             Download effyDOC Outlook Plugin
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Get the native Outlook plugin that integrates directly into your Outlook ribbon, 
-            just like professional plugins such as "saleshandy"
+            Install the native Outlook plugin that integrates directly into your Outlook interface. 
+            Track documents, monitor engagement, and get real-time analytics.
           </p>
         </div>
 
-        {/* Warning Banner */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
-          <div className="flex">
-            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mt-0.5" />
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800">
-                Windows Build Required
-              </h3>
-              <p className="mt-1 text-sm text-yellow-700">
-                The .exe installer must be built on Windows with Visual Studio. 
-                We provide the complete source code and build instructions below.
-              </p>
+        {/* Main Download Section */}
+        <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8 mb-8">
+          <div className="text-center">
+            <div className="flex justify-center mb-6">
+              <div className="bg-green-100 p-6 rounded-full">
+                <ComputerDesktopIcon className="h-16 w-16 text-green-600" />
+              </div>
             </div>
+            
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Ready-to-Install Plugin
+            </h2>
+            
+            <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+              Download the official effyDOC Outlook plugin installer. 
+              One-click installation with automatic configuration and setup.
+            </p>
+
+            {/* Download Button */}
+            {installerExists ? (
+              <button
+                onClick={handleDownloadInstaller}
+                disabled={downloadStatus === 'downloading'}
+                className="inline-flex items-center px-8 py-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+              >
+                {downloadStatus === 'downloading' ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                    Downloading...
+                  </>
+                ) : downloadStatus === 'completed' ? (
+                  <>
+                    <CheckCircleIcon className="h-6 w-6 mr-3" />
+                    Download Complete!
+                  </>
+                ) : (
+                  <>
+                    <ArrowDownTrayIcon className="h-6 w-6 mr-3" />
+                    Download Installer (Free)
+                  </>
+                )}
+              </button>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <ExclamationTriangleIcon className="h-5 w-5 inline mr-2" />
+                  Installer not yet generated. Click below to create it.
+                </p>
+                
+                <button
+                  onClick={generateInstaller}
+                  disabled={downloadStatus === 'generating'}
+                  className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                >
+                  {downloadStatus === 'generating' ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                      Generating Installer...
+                    </>
+                  ) : (
+                    <>
+                      <CogIcon className="h-6 w-6 mr-3" />
+                      Generate Installer
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+            
+            {downloadStatus === 'error' && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600">
+                  Failed to generate installer. Please try again or contact support.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Download Options */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {/* Source Code Download */}
+        {/* Features Preview */}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center mb-4">
-              <CodeBracketIcon className="h-8 w-8 text-indigo-600 mr-3" />
-              <h2 className="text-xl font-semibold text-gray-900">Source Code Package</h2>
+              <DocumentTextIcon className="h-8 w-8 text-indigo-600 mr-3" />
+              <h3 className="text-lg font-semibold text-gray-900">Document Tracking</h3>
             </div>
-            <p className="text-gray-600 mb-6">
-              Download the complete VSTO project source code, installer scripts, and build instructions.
+            <p className="text-gray-600 text-sm">
+              Track when recipients open, read, and interact with your documents. 
+              Get real-time notifications and detailed analytics.
             </p>
-            
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center text-sm text-gray-600">
-                <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
-                Complete C# VSTO project
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
-                NSIS installer script
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
-                Build instructions
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
-                Documentation
-              </div>
-            </div>
-
-            <button
-              onClick={handleDownloadSource}
-              className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center"
-            >
-              <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
-              Download Source Code
-            </button>
           </div>
-
-          {/* Pre-built .exe (Coming Soon) */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 opacity-75">
+          
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center mb-4">
-              <ComputerDesktopIcon className="h-8 w-8 text-gray-400 mr-3" />
-              <h2 className="text-xl font-semibold text-gray-500">Pre-built Installer</h2>
+              <ComputerDesktopIcon className="h-8 w-8 text-green-600 mr-3" />
+              <h3 className="text-lg font-semibold text-gray-900">Native Integration</h3>
             </div>
-            <p className="text-gray-500 mb-6">
-              Ready-to-install .exe file. Available after building on Windows environment.
+            <p className="text-gray-600 text-sm">
+              Seamlessly integrated into your Outlook interface. 
+              Access all features directly from your email sidebar.
             </p>
-            
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center text-sm text-gray-500">
-                <InformationCircleIcon className="h-4 w-4 text-blue-500 mr-2" />
-                One-click installation
-              </div>
-              <div className="flex items-center text-sm text-gray-500">
-                <InformationCircleIcon className="h-4 w-4 text-blue-500 mr-2" />
-                Prerequisites checking
-              </div>
-              <div className="flex items-center text-sm text-gray-500">
-                <InformationCircleIcon className="h-4 w-4 text-blue-500 mr-2" />
-                Automatic Outlook registration
-              </div>
-              <div className="flex items-center text-sm text-gray-500">
-                <InformationCircleIcon className="h-4 w-4 text-blue-500 mr-2" />
-                Professional installer UI
-              </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center mb-4">
+              <CloudArrowDownIcon className="h-8 w-8 text-blue-600 mr-3" />
+              <h3 className="text-lg font-semibold text-gray-900">Easy Installation</h3>
             </div>
-
-            <button
-              disabled
-              className="w-full bg-gray-300 text-gray-500 px-4 py-2 rounded-lg cursor-not-allowed flex items-center justify-center"
-            >
-              <CogIcon className="h-5 w-5 mr-2" />
-              Build Required
-            </button>
+            <p className="text-gray-600 text-sm">
+              One-click installation with automatic configuration. 
+              No technical knowledge required.
+            </p>
           </div>
         </div>
 
-        {/* Build Instructions */}
+        {/* Installation Instructions */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">How to Build the .exe Installer</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Installation Instructions</h2>
           
           <div className="space-y-6">
-            {/* Step 1 */}
             <div className="flex">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
@@ -154,14 +220,13 @@ const OutlookPluginDownload = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Setup Windows Environment</h3>
+                <h3 className="text-lg font-medium text-gray-900">Download the Installer</h3>
                 <p className="text-gray-600 mt-1">
-                  Install Visual Studio 2019/2022 with Office development tools and NSIS 3.0+
+                  Click the download button above to get the EffyDocOutlookPlugin-Setup.exe file
                 </p>
               </div>
             </div>
 
-            {/* Step 2 */}
             <div className="flex">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
@@ -169,14 +234,13 @@ const OutlookPluginDownload = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Download Source Code</h3>
+                <h3 className="text-lg font-medium text-gray-900">Run the Installer</h3>
                 <p className="text-gray-600 mt-1">
-                  Download the source code package and extract to your Windows machine
+                  Double-click the downloaded file and follow the installation wizard
                 </p>
               </div>
             </div>
 
-            {/* Step 3 */}
             <div className="flex">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
@@ -184,14 +248,13 @@ const OutlookPluginDownload = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Build in Visual Studio</h3>
+                <h3 className="text-lg font-medium text-gray-900">Restart Outlook</h3>
                 <p className="text-gray-600 mt-1">
-                  Open the .sln file, install NuGet packages, and build the solution
+                  Close and reopen Microsoft Outlook to activate the plugin
                 </p>
               </div>
             </div>
 
-            {/* Step 4 */}
             <div className="flex">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
@@ -199,93 +262,71 @@ const OutlookPluginDownload = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Create Installer</h3>
+                <h3 className="text-lg font-medium text-gray-900">Sign In & Start Tracking</h3>
                 <p className="text-gray-600 mt-1">
-                  Compile the NSIS script to generate EffyDocOutlookPlugin-Setup.exe
+                  Look for the effyDOC panel in your Outlook sidebar and sign in with your account
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Requirements */}
+        {/* System Requirements */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">System Requirements</h2>
           
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-medium text-gray-900 mb-2">Development (Windows)</h3>
+              <h3 className="font-medium text-gray-900 mb-2">Windows</h3>
               <ul className="space-y-1 text-sm text-gray-600">
-                <li>• Windows 10/11</li>
-                <li>• Visual Studio 2019/2022</li>
-                <li>• Office/SharePoint development tools</li>
+                <li>• Windows 7 or later</li>
                 <li>• .NET Framework 4.7.2+</li>
-                <li>• NSIS 3.0+</li>
+                <li>• 50 MB free disk space</li>
+                <li>• Active internet connection</li>
               </ul>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900 mb-2">End User Installation</h3>
+              <h3 className="font-medium text-gray-900 mb-2">Microsoft Outlook</h3>
               <ul className="space-y-1 text-sm text-gray-600">
-                <li>• Windows Vista or later</li>
-                <li>• Microsoft Outlook 2013/2016/2019/365</li>
-                <li>• .NET Framework 4.0+</li>
-                <li>• VSTO Runtime (auto-installed)</li>
+                <li>• Outlook 2013 or later</li>
+                <li>• Office 365 supported</li>
+                <li>• Add-ins must be enabled</li>
+                <li>• Administrator rights (for installation)</li>
               </ul>
             </div>
           </div>
         </div>
 
-        {/* Features */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Plugin Features</h2>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            <div>
-              <h3 className="font-medium text-gray-900 mb-2">Native Integration</h3>
-              <p className="text-sm text-gray-600">
-                Appears as "effyDOC" section in Outlook ribbon with 5 professional buttons
+        {/* Support Information */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex">
+            <InformationCircleIcon className="h-6 w-6 text-blue-600 mt-0.5" />
+            <div className="ml-3">
+              <h3 className="text-lg font-medium text-blue-900">
+                Need Help?
+              </h3>
+              <p className="mt-1 text-blue-700">
+                If you encounter any issues during installation or have questions about the plugin, 
+                please visit our support center or contact our team.
               </p>
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900 mb-2">Document Tracking</h3>
-              <p className="text-sm text-gray-600">
-                Real-time analytics for email opens, clicks, and document engagement
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900 mb-2">Professional UI</h3>
-              <p className="text-sm text-gray-600">
-                Native Windows forms for document selection and analytics viewing
-              </p>
+              <div className="mt-4 space-x-4">
+                <a 
+                  href="/support" 
+                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  <DocumentTextIcon className="h-4 w-4 mr-1" />
+                  Support Center
+                </a>
+                <a 
+                  href="mailto:support@effydoc.com" 
+                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  ✉️ Contact Support
+                </a>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* CLI Commands for copying */}
-        <div className="mt-8 bg-gray-900 rounded-lg p-4">
-          <h3 className="text-white font-medium mb-2">Quick Copy Commands</h3>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between bg-gray-800 p-2 rounded">
-              <code className="text-gray-300 text-sm">git clone [your-repo] && cd outlook-native-plugin</code>
-              <button 
-                onClick={() => copyToClipboard('git clone [your-repo] && cd outlook-native-plugin')}
-                className="text-gray-400 hover:text-white"
-              >
-                Copy
-              </button>
-            </div>
-            <div className="flex items-center justify-between bg-gray-800 p-2 rounded">
-              <code className="text-gray-300 text-sm">Install-Package Newtonsoft.Json -Version 13.0.3</code>
-              <button 
-                onClick={() => copyToClipboard('Install-Package Newtonsoft.Json -Version 13.0.3')}
-                className="text-gray-400 hover:text-white"
-              >
-                Copy
-              </button>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
   );
