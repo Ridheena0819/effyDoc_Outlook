@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
@@ -8,66 +8,15 @@ import logging
 from models import *
 from database import get_collection
 from auth import get_current_active_user
-from websocket_manager import websocket_manager, notify_document_activity
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/outlook", tags=["outlook-addin"])
-
-# ==================== WEBSOCKET ENDPOINT ====================
-
-@router.websocket("/ws")
-async def websocket_endpoint(
-    websocket: WebSocket,
-    user_email: str = Query(...),
-    token: str = Query(...)
-):
-    """WebSocket endpoint for real-time tracking updates"""
-    try:
-        # TODO: Validate token here for security
-        # For now, accepting connection with user_email
-        
-        await websocket_manager.connect(websocket, user_email)
-        
-        try:
-            while True:
-                # Receive messages from client
-                data = await websocket.receive_text()
-                message = json.loads(data)
-                
-                # Handle different message types
-                if message.get("type") == "subscribe_document":
-                    document_id = message.get("document_id")
-                    if document_id:
-                        await websocket_manager.subscribe_to_document(user_email, document_id)
-                        await websocket.send_text(json.dumps({
-                            "type": "subscription_confirmed",
-                            "document_id": document_id
-                        }))
-                
-                elif message.get("type") == "unsubscribe_document":
-                    document_id = message.get("document_id")
-                    if document_id:
-                        await websocket_manager.unsubscribe_from_document(user_email, document_id)
-                
-                elif message.get("type") == "heartbeat":
-                    await websocket.send_text(json.dumps({
-                        "type": "heartbeat_response",
-                        "timestamp": datetime.utcnow().isoformat()
-                    }))
-                    
-        except WebSocketDisconnect:
-            pass
-            
-    except Exception as e:
-        logger.error(f"WebSocket error for {user_email}: {e}")
-    finally:
-        await websocket_manager.disconnect(websocket, user_email)
+router = APIRouter(prefix="/api/outlook-native", tags=["outlook-native-plugin"])
 
 # ==================== DOCUMENT LIBRARY ENDPOINTS ====================
 
 @router.get("/documents/my-library")
 async def get_my_library(current_user: User = Depends(get_current_active_user)):
-    """Get user's personal document library for Outlook add-in"""
+    """Get user's personal document library for native Outlook plugin"""
     documents_collection = await get_collection('documents')
     
     # Get user's documents
@@ -78,7 +27,7 @@ async def get_my_library(current_user: User = Depends(get_current_active_user)):
     
     documents = await documents_collection.find(query).to_list(1000)
     
-    # Format for Outlook add-in
+    # Format for native Outlook plugin
     library_documents = []
     for doc in documents:
         # Calculate basic tracking stats
@@ -92,12 +41,9 @@ async def get_my_library(current_user: User = Depends(get_current_active_user)):
             "updated_at": doc["updated_at"].isoformat(),
             "total_pages": doc.get("total_pages", len(doc.get("pages", []))),
             "file_size": doc.get("metadata", {}).get("file_size", 0),
-            "tracking_stats": {
-                "total_views": len([e for e in tracking_events if e.get("action") == "VIEW"]),
-                "total_shares": len([e for e in tracking_events if e.get("action") == "CREATE"]),
-                "last_viewed": max([e.get("timestamp") for e in tracking_events if e.get("action") == "VIEW"], default=None)
-            },
-            "share_link": f"/view/{doc['id']}",
+            "total_views": len([e for e in tracking_events if e.get("action") == "VIEW"]),
+            "description": doc.get("description", ""),
+            "tracking_link": f"/view/{doc['id']}?source=outlook_native",
             "is_trackable": True
         })
     
@@ -109,7 +55,7 @@ async def get_my_library(current_user: User = Depends(get_current_active_user)):
 
 @router.get("/documents/content-hub")
 async def get_content_hub(current_user: User = Depends(get_current_active_user)):
-    """Get admin-shared documents (Content Hub) for Outlook add-in"""
+    """Get admin-shared documents (Content Hub) for native Outlook plugin"""
     documents_collection = await get_collection('documents')
     
     # Get admin-shared documents for user's organization
@@ -121,7 +67,7 @@ async def get_content_hub(current_user: User = Depends(get_current_active_user))
     
     documents = await documents_collection.find(query).to_list(1000)
     
-    # Format for Outlook add-in
+    # Format for native Outlook plugin
     hub_documents = []
     for doc in documents:
         hub_documents.append({
@@ -133,7 +79,7 @@ async def get_content_hub(current_user: User = Depends(get_current_active_user))
             "total_pages": doc.get("total_pages", len(doc.get("pages", []))),
             "description": doc.get("metadata", {}).get("description", ""),
             "tags": doc.get("tags", []),
-            "share_link": f"/view/{doc['id']}",
+            "tracking_link": f"/view/{doc['id']}?source=outlook_native",
             "is_template": doc.get("metadata", {}).get("is_template", False),
             "is_trackable": True
         })
@@ -144,333 +90,14 @@ async def get_content_hub(current_user: User = Depends(get_current_active_user))
         "organization": current_user.organization
     }
 
-# ==================== TRACKING ENDPOINTS ====================
-
-@router.post("/tracking/email-sent")
-async def track_email_sent(
-    tracking_data: Dict[str, Any],
-    current_user: User = Depends(get_current_active_user)
-):
-    """Track when a document is sent via email from Outlook"""
-    try:
-        document_id = tracking_data["document_id"]
-        recipients = tracking_data["recipients"]
-        subject = tracking_data.get("subject", "")
-        
-        # Store email tracking record
-        outlook_tracking_collection = await get_collection('outlook_email_tracking')
-        
-        tracking_record = OutlookEmailTracking(
-            document_id=document_id,
-            sender_email=current_user.email,
-            recipient_emails=recipients,
-            subject=subject,
-            email_body=tracking_data.get("email_body", ""),
-            tracking_link=f"/view/{document_id}?source=outlook&sender={current_user.email}"
-        )
-        
-        await outlook_tracking_collection.insert_one(tracking_record.dict())
-        
-        # Send real-time notification
-        await notify_document_activity(
-            document_id=document_id,
-            event_type="email_sent",
-            data={
-                "user_email": current_user.email,
-                "recipient_email": ",".join(recipients),
-                "metadata": {
-                    "subject": subject,
-                    "recipient_count": len(recipients),
-                    "source": "outlook_addin"
-                }
-            }
-        )
-        
-        return {
-            "message": "Email tracking started",
-            "tracking_id": tracking_record.id,
-            "tracking_link": tracking_record.tracking_link
-        }
-        
-    except Exception as e:
-        logger.error(f"Error tracking email sent: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.post("/tracking/event")
-async def track_document_event(
-    event_data: Dict[str, Any]
-):
-    """Track document interaction events (opened, clicked, page viewed, etc.)"""
-    try:
-        event = OutlookTrackingEvent(
-            event_type=event_data["event_type"],
-            document_id=event_data["document_id"],
-            user_email=event_data.get("user_email"),
-            recipient_email=event_data.get("recipient_email"),
-            page_number=event_data.get("page_number"),
-            duration=event_data.get("duration"),
-            user_agent=event_data.get("user_agent"),
-            ip_address=event_data.get("ip_address"),
-            session_id=event_data.get("session_id"),
-            metadata=event_data.get("metadata", {})
-        )
-        
-        # Store event
-        tracking_events_collection = await get_collection('outlook_tracking_events')
-        await tracking_events_collection.insert_one(event.dict())
-        
-        # Update email tracking record if exists
-        outlook_tracking_collection = await get_collection('outlook_email_tracking')
-        
-        if event.event_type == "email_opened":
-            await outlook_tracking_collection.update_many(
-                {"document_id": event.document_id, "recipient_emails": {"$in": [event.recipient_email]}},
-                {
-                    "$set": {"opened_at": event.timestamp},
-                    "$inc": {"total_opens": 1},
-                    "$push": {"tracking_events": event.dict()}
-                }
-            )
-            
-        elif event.event_type == "link_clicked":
-            await outlook_tracking_collection.update_many(
-                {"document_id": event.document_id, "recipient_emails": {"$in": [event.recipient_email]}},
-                {
-                    "$set": {"clicked_at": event.timestamp},
-                    "$inc": {"total_clicks": 1},
-                    "$push": {"tracking_events": event.dict()}
-                }
-            )
-        
-        # Send real-time notification to document owner
-        await websocket_manager.send_tracking_update(event.document_id, event)
-        
-        return {"message": "Event tracked successfully", "event_id": event.id}
-        
-    except Exception as e:
-        logger.error(f"Error tracking event: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/tracking/live-metrics/{document_id}")
-async def get_live_tracking_metrics(
-    document_id: str,
-    current_user: User = Depends(get_current_active_user)
-):
-    """Get real-time tracking metrics for a document"""
-    try:
-        # Check document access
-        documents_collection = await get_collection('documents')
-        document = await documents_collection.find_one({"id": document_id})
-        
-        if not document:
-            raise HTTPException(status_code=404, detail="Document not found")
-        
-        # Check if user has access (owner or collaborator)
-        if document["owner_id"] != current_user.id:
-            # Check if user is a collaborator
-            collaborator_ids = [c.get("user_id") for c in document.get("collaborators", [])]
-            if current_user.id not in collaborator_ids:
-                raise HTTPException(status_code=403, detail="Access denied")
-        
-        # Get recent tracking events (last 24 hours)
-        tracking_events_collection = await get_collection('outlook_tracking_events')
-        twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
-        
-        recent_events = await tracking_events_collection.find({
-            "document_id": document_id,
-            "timestamp": {"$gte": twenty_four_hours_ago}
-        }).sort("timestamp", -1).to_list(100)
-        
-        # Calculate current readers (active in last 5 minutes)
-        five_minutes_ago = datetime.utcnow() - timedelta(minutes=5)
-        current_readers = []
-        
-        for event in recent_events:
-            if (event["event_type"] == "currently_reading" and 
-                event["timestamp"] >= five_minutes_ago):
-                
-                reader_info = {
-                    "email": event.get("recipient_email", "Anonymous"),
-                    "page": event.get("page_number", 1),
-                    "since": event["timestamp"].isoformat(),
-                    "duration": event.get("duration", 0)
-                }
-                
-                # Avoid duplicates
-                if not any(r["email"] == reader_info["email"] for r in current_readers):
-                    current_readers.append(reader_info)
-        
-        # Calculate today's stats
-        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-        today_events = [e for e in recent_events if e["timestamp"] >= today_start]
-        
-        today_stats = {
-            "emails_opened": len([e for e in today_events if e["event_type"] == "email_opened"]),
-            "links_clicked": len([e for e in today_events if e["event_type"] == "link_clicked"]),
-            "page_views": len([e for e in today_events if e["event_type"] == "page_viewed"]),
-            "unique_viewers": len(set([e.get("recipient_email") for e in today_events if e.get("recipient_email")]))
-        }
-        
-        # Convert events for response
-        formatted_events = []
-        for event in recent_events[:10]:  # Last 10 events
-            formatted_events.append(OutlookTrackingEvent(**event))
-        
-        metrics = LiveTrackingMetrics(
-            document_id=document_id,
-            current_readers=current_readers,
-            recent_activity=formatted_events,
-            today_stats=today_stats
-        )
-        
-        return metrics.dict()
-        
-    except Exception as e:
-        logger.error(f"Error getting live metrics: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/tracking/document-analytics/{document_id}")
-async def get_document_analytics_for_outlook(
-    document_id: str,
-    current_user: User = Depends(get_current_active_user)
-):
-    """Get comprehensive analytics for a document (Outlook add-in optimized)"""
-    try:
-        # Check document access (same as above)
-        documents_collection = await get_collection('documents')
-        document = await documents_collection.find_one({"id": document_id})
-        
-        if not document:
-            raise HTTPException(status_code=404, detail="Document not found")
-        
-        if document["owner_id"] != current_user.id:
-            collaborator_ids = [c.get("user_id") for c in document.get("collaborators", [])]
-            if current_user.id not in collaborator_ids:
-                raise HTTPException(status_code=403, detail="Access denied")
-        
-        # Get all tracking events for this document
-        tracking_events_collection = await get_collection('outlook_tracking_events')
-        all_events = await tracking_events_collection.find({"document_id": document_id}).to_list(1000)
-        
-        # Get email tracking records
-        outlook_tracking_collection = await get_collection('outlook_email_tracking')
-        email_records = await outlook_tracking_collection.find({"document_id": document_id}).to_list(1000)
-        
-        # Calculate analytics
-        total_emails_sent = len(email_records)
-        total_opens = sum([record.get("total_opens", 0) for record in email_records])
-        total_clicks = sum([record.get("total_clicks", 0) for record in email_records])
-        
-        unique_viewers = len(set([e.get("recipient_email") for e in all_events if e.get("recipient_email")]))
-        
-        # Page-wise analytics
-        page_analytics = {}
-        for event in all_events:
-            if event.get("page_number") and event.get("event_type") == "page_viewed":
-                page_num = event["page_number"]
-                if page_num not in page_analytics:
-                    page_analytics[page_num] = {"views": 0, "unique_viewers": set(), "total_time": 0}
-                
-                page_analytics[page_num]["views"] += 1
-                if event.get("recipient_email"):
-                    page_analytics[page_num]["unique_viewers"].add(event["recipient_email"])
-                if event.get("duration"):
-                    page_analytics[page_num]["total_time"] += event["duration"]
-        
-        # Convert sets to counts
-        for page_num in page_analytics:
-            page_analytics[page_num]["unique_viewers"] = len(page_analytics[page_num]["unique_viewers"])
-            if page_analytics[page_num]["views"] > 0:
-                page_analytics[page_num]["avg_time"] = page_analytics[page_num]["total_time"] / page_analytics[page_num]["views"]
-            else:
-                page_analytics[page_num]["avg_time"] = 0
-        
-        # Recent activity (last 7 days)
-        seven_days_ago = datetime.utcnow() - timedelta(days=7)
-        recent_activity = [e for e in all_events if e["timestamp"] >= seven_days_ago]
-        
-        analytics = {
-            "document_id": document_id,
-            "document_title": document["title"],
-            "summary": {
-                "total_emails_sent": total_emails_sent,
-                "total_opens": total_opens,
-                "total_clicks": total_clicks,
-                "unique_viewers": unique_viewers,
-                "open_rate": (total_opens / total_emails_sent * 100) if total_emails_sent > 0 else 0,
-                "click_rate": (total_clicks / total_emails_sent * 100) if total_emails_sent > 0 else 0
-            },
-            "page_analytics": page_analytics,
-            "recent_activity_count": len(recent_activity),
-            "total_events": len(all_events),
-            "last_activity": max([e["timestamp"] for e in all_events], default=None),
-            "generated_at": datetime.utcnow().isoformat()
-        }
-        
-        return analytics
-        
-    except Exception as e:
-        logger.error(f"Error getting document analytics: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-# ==================== UTILITY ENDPOINTS ====================
-
-@router.get("/user/session-info")
-async def get_user_session_info(current_user: User = Depends(get_current_active_user)):
-    """Get current user session information for Outlook add-in"""
-    return {
-        "user_email": current_user.email,
-        "full_name": current_user.full_name,
-        "organization": current_user.organization,
-        "role": current_user.role,
-        "connected_at": datetime.utcnow().isoformat(),
-        "websocket_endpoint": "/api/outlook/ws",
-        "permissions": {
-            "can_send_documents": True,
-            "can_view_analytics": True,
-            "can_access_content_hub": True,
-            "can_create_documents": current_user.role in ["admin", "editor"]
-        }
-    }
-
-@router.get("/documents/{document_id}/share-link")
-async def generate_trackable_link(
-    document_id: str,
-    current_user: User = Depends(get_current_active_user)
-):
-    """Generate a trackable link for a document"""
-    try:
-        # Check document access
-        documents_collection = await get_collection('documents')
-        document = await documents_collection.find_one({"id": document_id})
-        
-        if not document:
-            raise HTTPException(status_code=404, detail="Document not found")
-        
-        # Generate trackable link with user info
-        tracking_params = f"?source=outlook&sender={current_user.email}&timestamp={int(datetime.utcnow().timestamp())}"
-        trackable_link = f"/view/{document_id}{tracking_params}"
-        
-        return {
-            "document_id": document_id,
-            "document_title": document["title"],
-            "trackable_link": trackable_link,
-            "full_url": f"{trackable_link}",  # Frontend will prepend domain
-            "generated_by": current_user.email,
-            "generated_at": datetime.utcnow().isoformat(),
-            "tracking_enabled": True
-        }
-        
-    except Exception as e:
-        logger.error(f"Error generating trackable link: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+# ==================== DOCUMENT CONTENT ENDPOINTS ====================
 
 @router.get("/documents/{document_id}/content")
 async def get_document_content(
     document_id: str,
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get document content for preview/editing in Outlook add-in"""
+    """Get document content for preview in native Outlook plugin"""
     try:
         documents_collection = await get_collection('documents')
         document = await documents_collection.find_one({"id": document_id})
@@ -497,50 +124,12 @@ async def get_document_content(
         logger.error(f"Error getting document content: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/documents/{document_id}/content")
-async def update_document_content(
+@router.post("/documents/{document_id}/generate-attachment")
+async def generate_trackable_attachment(
     document_id: str,
-    content_data: Dict[str, Any],
     current_user: User = Depends(get_current_active_user)
 ):
-    """Update document content from Outlook add-in"""
-    try:
-        documents_collection = await get_collection('documents')
-        document = await documents_collection.find_one({"id": document_id})
-        
-        if not document:
-            raise HTTPException(status_code=404, detail="Document not found")
-        
-        if document["owner_id"] != current_user.id:
-            raise HTTPException(status_code=403, detail="Edit access denied")
-        
-        update_fields = {}
-        if "title" in content_data:
-            update_fields["title"] = content_data["title"]
-        if "pages" in content_data:
-            update_fields["pages"] = content_data["pages"]
-            update_fields["total_pages"] = len(content_data["pages"])
-        
-        update_fields["updated_at"] = datetime.utcnow()
-        
-        result = await documents_collection.update_one(
-            {"id": document_id},
-            {"$set": update_fields}
-        )
-        
-        return {"message": "Document updated successfully", "document_id": document_id}
-        
-    except Exception as e:
-        logger.error(f"Error updating document content: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.post("/documents/{document_id}/attachment-data")
-async def generate_attachment_data(
-    document_id: str,
-    options: Dict[str, Any],
-    current_user: User = Depends(get_current_active_user)
-):
-    """Generate attachment data for document"""
+    """Generate trackable HTML attachment for native Outlook plugin"""
     try:
         documents_collection = await get_collection('documents')
         document = await documents_collection.find_one({"id": document_id})
@@ -554,61 +143,185 @@ async def generate_attachment_data(
                 raise HTTPException(status_code=403, detail="Access denied")
         
         # Generate tracking link
-        tracking_params = f"?source=outlook_attachment&sender={current_user.email}&timestamp={int(datetime.utcnow().timestamp())}"
+        tracking_params = f"?source=outlook_native&sender={current_user.email}&timestamp={int(datetime.utcnow().timestamp())}"
         tracking_link = f"/view/{document_id}{tracking_params}"
         
-        # Generate HTML content
+        # Generate HTML content for email
         pages = document.get("pages", [])
         title = document.get("title", "Document")
         
         html_content = f"""
-<!DOCTYPE html>
-<html><head><title>{title}</title></head>
-<body style="font-family: Arial, sans-serif; margin: 20px;">
-<h1>{title}</h1>
-"""
-        
-        for page in pages:
-            page_title = page.get("title", "")
-            page_content = page.get("content", "")
-            html_content += f"<h2>{page_title}</h2><div>{page_content}</div>"
-        
-        html_content += f"""
-<footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc;">
-<p><a href="{tracking_link}">View online version</a></p>
-<p>Powered by effyDOC</p>
-</footer>
-</body></html>
-"""
+        <div style='border: 2px solid #4f46e5; border-radius: 8px; padding: 16px; margin: 16px 0; background: #f8fafc;'>
+            <div style='display: flex; align-items: center; margin-bottom: 12px;'>
+                <strong style='color: #4f46e5; font-size: 16px;'>📄 effyDOC Document</strong>
+            </div>
+            <h3 style='color: #1e293b; margin: 0 0 8px 0; font-size: 18px;'>{title}</h3>
+            <p style='color: #64748b; margin: 0 0 12px 0; font-size: 14px;'>{document.get("type", "document")} • {len(pages)} pages • Updated {document.get("updated_at", datetime.utcnow()).strftime("%b %d, %Y")}</p>
+            <p style='color: #4f46e5; font-size: 12px; margin: 12px 0;'>
+                📊 This document includes tracking analytics and interactive elements
+            </p>
+            <div style='margin-top: 12px;'>
+                <a href='{tracking_link}' 
+                   style='background: #4f46e5; color: white; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500;'
+                   data-effydoc-document='{document_id}' 
+                   class='effydoc-tracking-link'>
+                   View Full Document
+                </a>
+            </div>
+        </div>"""
         
         return {
             "document_id": document_id,
-            "filename": f"{title}.html",
-            "content": html_content,
-            "tracking_link": tracking_link
+            "document_title": title,
+            "html_content": html_content,
+            "tracking_link": tracking_link,
+            "generated_at": datetime.utcnow().isoformat()
         }
         
     except Exception as e:
         logger.error(f"Error generating attachment: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ==================== TRACKING ENDPOINTS ====================
+
+@router.post("/tracking/email-sent")
+async def track_email_sent(
+    tracking_data: Dict[str, Any],
+    current_user: User = Depends(get_current_active_user)
+):
+    """Track when a document is sent via email from native Outlook plugin"""
+    try:
+        document_id = tracking_data["document_id"]
+        recipients = tracking_data["recipients"]
+        subject = tracking_data.get("subject", "")
+        
+        # Store tracking event
+        documents_collection = await get_collection('documents')
+        
+        # Add tracking event to document
+        tracking_event = {
+            "action": "EMAIL_SENT",
+            "user_id": current_user.id,
+            "user_email": current_user.email,
+            "timestamp": datetime.utcnow(),
+            "metadata": {
+                "recipients": recipients,
+                "subject": subject,
+                "source": "outlook_native_plugin",
+                "recipient_count": len(recipients)
+            }
+        }
+        
+        await documents_collection.update_one(
+            {"id": document_id},
+            {
+                "$push": {"tracking_events": tracking_event},
+                "$set": {"last_activity": datetime.utcnow()}
+            }
+        )
+        
+        return {
+            "message": "Email tracking started",
+            "document_id": document_id,
+            "recipients": recipients,
+            "tracking_link": f"/view/{document_id}?source=outlook_native&sender={current_user.email}"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error tracking email sent: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/analytics/documents/{document_id}")
+async def get_document_analytics(
+    document_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get comprehensive analytics for a document (Native Outlook plugin)"""
+    try:
+        documents_collection = await get_collection('documents')
+        document = await documents_collection.find_one({"id": document_id})
+        
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        if document["owner_id"] != current_user.id:
+            collaborator_ids = [c.get("user_id") for c in document.get("collaborators", [])]
+            if current_user.id not in collaborator_ids:
+                raise HTTPException(status_code=403, detail="Access denied")
+        
+        # Get tracking events
+        tracking_events = document.get("tracking_events", [])
+        
+        # Calculate analytics
+        total_views = len([e for e in tracking_events if e.get("action") == "VIEW"])
+        total_emails = len([e for e in tracking_events if e.get("action") == "EMAIL_SENT"])
+        unique_viewers = len(set([e.get("user_email") for e in tracking_events if e.get("user_email")]))
+        
+        # Recent activity (last 24 hours)
+        twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
+        recent_events = [
+            e for e in tracking_events 
+            if e.get("timestamp", datetime.min) >= twenty_four_hours_ago
+        ]
+        
+        analytics = {
+            "document_id": document_id,
+            "document_title": document["title"],
+            "summary": {
+                "total_views": total_views,
+                "total_emails": total_emails,
+                "unique_viewers": unique_viewers,
+                "total_opens": len([e for e in tracking_events if e.get("action") == "OPEN"]),
+                "total_clicks": len([e for e in tracking_events if e.get("action") == "CLICK"]),
+                "open_rate": (len([e for e in tracking_events if e.get("action") == "OPEN"]) / max(total_emails, 1)) * 100,
+                "click_rate": (len([e for e in tracking_events if e.get("action") == "CLICK"]) / max(total_emails, 1)) * 100
+            },
+            "recent_activity_count": len(recent_events),
+            "total_events": len(tracking_events),
+            "last_activity": max([e.get("timestamp") for e in tracking_events], default=None),
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+        return analytics
+        
+    except Exception as e:
+        logger.error(f"Error getting document analytics: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== USER SESSION ENDPOINTS ====================
+
+@router.get("/user/session-info")
+async def get_user_session_info(current_user: User = Depends(get_current_active_user)):
+    """Get current user session information for native Outlook plugin"""
+    return {
+        "user_email": current_user.email,
+        "full_name": current_user.full_name,
+        "organization": current_user.organization,
+        "role": current_user.role,
+        "connected_at": datetime.utcnow().isoformat(),
+        "permissions": {
+            "can_send_documents": True,
+            "can_view_analytics": True,
+            "can_access_content_hub": True,
+            "can_create_documents": current_user.role in ["admin", "editor"]
+        },
+        "plugin_version": "1.0.0",
+        "api_version": "native-v1"
+    }
+
 @router.get("/status")
-async def outlook_addin_status():
-    """Health check and status for Outlook add-in"""
-    connected_users = await websocket_manager.get_connected_users()
-    
+async def outlook_native_plugin_status():
+    """Health check and status for native Outlook plugin"""
     return {
         "status": "healthy",
-        "service": "effyDOC Outlook Add-in API",
+        "service": "effyDOC Native Outlook Plugin API",
         "version": "1.0.0",
-        "connected_users": len(connected_users),
-        "active_connections": sum(connected_users.values()),
         "timestamp": datetime.utcnow().isoformat(),
         "features": {
-            "real_time_tracking": True,
             "document_library": True,
             "content_hub": True,
-            "live_analytics": True,
-            "websocket_support": True
+            "analytics": True,
+            "tracking": True,
+            "native_integration": True
         }
     }
