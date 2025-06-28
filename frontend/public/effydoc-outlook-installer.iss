@@ -4,7 +4,7 @@
 #define MyAppName "effyDOC Outlook Add-in"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "effyDOC"
-#define MyAppURL "https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com"
+#define MyAppURL "https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com"
 #define MyAppExeName "outlook.exe"
 
 [Setup]
@@ -77,7 +77,7 @@ begin
     Log('Found Outlook at: ' + OutlookPath);
     
     DownloadPage.Clear;
-    DownloadPage.Add('https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/outlook-addin/manifest.xml', 'manifest.xml', '');
+    DownloadPage.Add('https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com/outlook-addin/manifest.xml', 'manifest.xml', '');
     DownloadPage.Show;
     try
       try
@@ -129,7 +129,7 @@ begin
         '- If the add-in doesn''t appear, try restarting Outlook' + #13#10 +
         '- Ensure you have an active effyDOC account' + #13#10 +
         '- Visit our help center for detailed setup guides' + #13#10 + #13#10 +
-        'Support: https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/integrations.html',
+        'Support: https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com/integrations.html',
         False);
         
       Log('Installation completed successfully');

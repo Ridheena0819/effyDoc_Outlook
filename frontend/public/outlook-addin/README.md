@@ -29,7 +29,7 @@ Transform your email workflow with real-time document tracking directly in Micro
 4. Install via Outlook → Settings → Manage Add-ins
 
 ## 🔗 Add-in Interface URL
-https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/outlook-addin/
+https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com/outlook-addin/
 
 ## 📊 How It Works
 
@@ -47,8 +47,8 @@ https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/outlook-a
 
 ## 💡 Support
 
-- Platform: https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com
-- Integration Page: https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/integrations.html
+- Platform: https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com
+- Integration Page: https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com/integrations.html
 
 ## 🔧 Troubleshooting
 

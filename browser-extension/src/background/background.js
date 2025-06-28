@@ -3,7 +3,7 @@
 console.log('effyDOC Browser Extension: Background service worker loaded');
 
 // Constants
-const BACKEND_URL = 'https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com';
+const BACKEND_URL = 'https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com';
 
 // Extension installation handler
 chrome.runtime.onInstalled.addListener((details) => {

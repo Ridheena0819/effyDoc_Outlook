@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   function openLoginPage() {
     chrome.tabs.create({
-      url: 'https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/register?source=browser_extension'
+      url: 'https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com/register?source=browser_extension'
     });
     window.close();
   }
@@ -268,21 +268,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   function openDashboard() {
     chrome.tabs.create({
-      url: 'https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/dashboard'
+      url: 'https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com/dashboard'
     });
     window.close();
   }
   
   function openHelp() {
     chrome.tabs.create({
-      url: 'https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/integrations.html'
+      url: 'https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com/integrations.html'
     });
     window.close();
   }
   
   function openSettings() {
     chrome.tabs.create({
-      url: 'https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/profile'
+      url: 'https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com/profile'
     });
     window.close();
   }

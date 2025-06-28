@@ -4,7 +4,7 @@
 !define PRODUCT_NAME "effyDOC Outlook Add-in"
 !define PRODUCT_VERSION "1.0.0"
 !define PRODUCT_PUBLISHER "effyDOC"
-!define PRODUCT_WEB_SITE "https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com"
+!define PRODUCT_WEB_SITE "https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\effyDOC-Outlook"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
@@ -96,7 +96,7 @@ Section "effyDOC Outlook Add-in" SEC01
   DetailPrint "Downloading effyDOC add-in manifest..."
   
   # Use built-in HTTP download (NSIS 3.0+)
-  NSISdl::download "https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/outlook-addin/manifest.xml" "$INSTDIR\manifest.xml"
+  NSISdl::download "https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com/outlook-addin/manifest.xml" "$INSTDIR\manifest.xml"
   Pop $R0
   StrCmp $R0 "success" download_ok
     MessageBox MB_ICONSTOP "Failed to download add-in manifest.$\r$\nPlease check your internet connection and try again."
@@ -119,7 +119,7 @@ Section "effyDOC Outlook Add-in" SEC01
   FileWrite $9 "- If the add-in doesn't appear, try restarting Outlook$\r$\n"
   FileWrite $9 "- Ensure you have an active effyDOC account$\r$\n"
   FileWrite $9 "- Visit our help center for detailed setup guides$\r$\n$\r$\n"
-  FileWrite $9 "Support: https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/integrations.html$\r$\n"
+  FileWrite $9 "Support: https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com/integrations.html$\r$\n"
   FileClose $9
   
   # Register add-in in Windows Registry

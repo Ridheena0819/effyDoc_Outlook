@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import jwt
 
 # Get the backend URL from the frontend .env file
-BACKEND_URL = "https://d151863e-ee5d-469c-b381-52e4cf994367.preview.emergentagent.com/api"
+BACKEND_URL = "https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com/api"
 
 def test_auth_functionality():
     """Test the authentication functionality with focus on JWT token expiration and validation"""
