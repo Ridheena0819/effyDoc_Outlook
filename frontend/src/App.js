@@ -336,10 +336,15 @@ function App() {
               <Route path="settings" element={<Settings />} />
             </Route>
             
-            {/* Special route for Outlook Plugin Simulation */}
+            {/* Special routes for Outlook Plugin */}
             <Route path="/outlook-plugin-simulation" element={
               <SimulationRoute>
                 <OutlookPluginSimulation />
+              </SimulationRoute>
+            } />
+            <Route path="/outlook-plugin-download" element={
+              <SimulationRoute>
+                <OutlookPluginDownload />
               </SimulationRoute>
             } />
 
