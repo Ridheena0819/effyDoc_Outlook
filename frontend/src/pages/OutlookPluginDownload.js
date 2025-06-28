@@ -310,33 +310,88 @@ const OutlookPluginDownload = () => {
           </div>
         </div>
 
-        {/* Support Information */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <div className="flex">
-            <InformationCircleIcon className="h-6 w-6 text-blue-600 mt-0.5" />
-            <div className="ml-3">
-              <h3 className="text-lg font-medium text-blue-900">
-                Need Help?
+        {/* Troubleshooting Section */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
+          <h2 className="text-xl font-semibold text-yellow-800 mb-4 flex items-center">
+            <ExclamationTriangleIcon className="h-6 w-6 mr-2" />
+            Troubleshooting
+          </h2>
+          
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-medium text-yellow-800 mb-2">
+                "This app can't run on your PC" Error
               </h3>
-              <p className="mt-1 text-blue-700">
-                If you encounter any issues during installation or have questions about the plugin, 
-                please visit our support center or contact our team.
+              <p className="text-yellow-700 text-sm mb-2">
+                If you see this error when running the installer:
               </p>
-              <div className="mt-4 space-x-4">
-                <a 
-                  href="/support" 
-                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  <DocumentTextIcon className="h-4 w-4 mr-1" />
-                  Support Center
+              <ol className="text-yellow-700 text-sm space-y-1 ml-4">
+                <li>1. Right-click the downloaded file → "Run as administrator"</li>
+                <li>2. If still blocked, right-click → Properties → Unblock → OK</li>
+                <li>3. Try running from Command Prompt as administrator</li>
+                <li>4. Alternatively, use the manual setup option above</li>
+              </ol>
+            </div>
+            
+            <div>
+              <h3 className="font-medium text-yellow-800 mb-2">
+                Windows Security Warning
+              </h3>
+              <p className="text-yellow-700 text-sm">
+                Windows may show security warnings for downloaded files. This is normal for new installers. 
+                Click "More info" → "Run anyway" if you trust the source.
+              </p>
+            </div>
+            
+            <div>
+              <h3 className="font-medium text-yellow-800 mb-2">
+                Plugin Not Appearing in Outlook
+              </h3>
+              <ol className="text-yellow-700 text-sm space-y-1 ml-4">
+                <li>1. Completely close and restart Outlook</li>
+                <li>2. Check File → Options → Add-ins → Manage: COM Add-ins</li>
+                <li>3. Ensure "effyDOC" is listed and enabled</li>
+                <li>4. Try running Outlook as administrator once</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        {/* Manual Setup Section */}
+        <div id="manual-setup" className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Manual Setup Instructions</h2>
+          
+          <div className="space-y-4 text-sm">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-900 mb-2">Step 1: Create Manifest File</h3>
+              <p className="text-gray-600 mb-2">Create a file at:</p>
+              <code className="bg-gray-200 px-2 py-1 rounded text-xs">
+                %USERPROFILE%\AppData\Roaming\Microsoft\AddIns\effyDOC\manifest.xml
+              </code>
+              <p className="text-gray-600 mt-2">
+                <a href="/outlook-addin/manifest.xml" target="_blank" className="text-blue-600 hover:text-blue-800">
+                  Download the manifest.xml file here
                 </a>
-                <a 
-                  href="mailto:support@effydoc.com" 
-                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  ✉️ Contact Support
-                </a>
-              </div>
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-900 mb-2">Step 2: Register in Windows Registry</h3>
+              <p className="text-gray-600 mb-2">Add registry entry:</p>
+              <code className="bg-gray-200 px-2 py-1 rounded text-xs block">
+                HKEY_CURRENT_USER\SOFTWARE\Microsoft\Office\16.0\WEF\Developer
+                <br />
+                Name: effyDOC
+                <br />
+                Value: [path to manifest.xml]
+              </code>
+            </div>
+            
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-900 mb-2">Step 3: Restart Outlook</h3>
+              <p className="text-gray-600">
+                Close Outlook completely and restart. The effyDOC panel should appear in the sidebar.
+              </p>
             </div>
           </div>
         </div>
