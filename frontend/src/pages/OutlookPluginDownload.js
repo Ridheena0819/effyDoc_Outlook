@@ -32,10 +32,10 @@ const OutlookPluginDownload = () => {
   const handleDownloadInstaller = () => {
     setDownloadStatus('downloading');
     
-    // Create download link for the working .bat file
+    // Create download link for the real .exe file
     const link = document.createElement('a');
-    link.href = '/EffyDocOutlookPlugin-Setup.bat';
-    link.download = 'EffyDocOutlookPlugin-Setup.bat';
+    link.href = '/EffyDocOutlookPlugin-Setup.exe';
+    link.download = 'EffyDocOutlookPlugin-Setup.exe';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
