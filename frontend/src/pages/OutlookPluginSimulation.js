@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { useAuth } from '../contexts/AuthContext';
 import { 
   DocumentTextIcon, 
   ArrowPathIcon, 
@@ -23,27 +22,212 @@ const api = axios.create({
   timeout: 30000,
 });
 
-// Add token to requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+// Mock data for simulation
+const MOCK_DATA = {
+  user: {
+    id: 'user-123',
+    email: 'demo@effydoc.com',
+    full_name: 'Demo User',
+    organization: 'effyDOC Inc.',
+    role: 'admin'
+  },
+  documents: [
+    {
+      id: 'doc-1',
+      title: 'Business Proposal - Q3 2025',
+      type: 'proposal',
+      created_at: '2025-06-15T10:30:00Z',
+      updated_at: '2025-06-20T14:45:00Z',
+      total_pages: 5,
+      total_views: 12,
+      description: 'Quarterly business proposal for potential clients',
+      tracking_link: '/view/doc-1?source=outlook_native'
+    },
+    {
+      id: 'doc-2',
+      title: 'Service Agreement Template',
+      type: 'contract',
+      created_at: '2025-05-10T09:15:00Z',
+      updated_at: '2025-06-18T11:20:00Z',
+      total_pages: 8,
+      total_views: 24,
+      description: 'Standard service agreement for new clients',
+      tracking_link: '/view/doc-2?source=outlook_native'
+    },
+    {
+      id: 'doc-3',
+      title: 'Product Roadmap 2025-2026',
+      type: 'document',
+      created_at: '2025-06-01T16:45:00Z',
+      updated_at: '2025-06-22T10:10:00Z',
+      total_pages: 12,
+      total_views: 36,
+      description: 'Strategic product roadmap for the next fiscal year',
+      tracking_link: '/view/doc-3?source=outlook_native'
+    }
+  ],
+  contentHub: [
+    {
+      id: 'hub-1',
+      title: 'Company Overview',
+      type: 'presentation',
+      created_at: '2025-04-20T14:30:00Z',
+      owner_name: 'Marketing Team',
+      total_pages: 15,
+      description: 'Official company overview for client presentations',
+      tags: ['company', 'overview', 'marketing'],
+      tracking_link: '/view/hub-1?source=outlook_native',
+      is_template: true
+    },
+    {
+      id: 'hub-2',
+      title: 'Sales Pitch Deck',
+      type: 'presentation',
+      created_at: '2025-05-05T11:45:00Z',
+      owner_name: 'Sales Team',
+      total_pages: 18,
+      description: 'Standard sales pitch for new prospects',
+      tags: ['sales', 'pitch', 'presentation'],
+      tracking_link: '/view/hub-2?source=outlook_native',
+      is_template: true
+    }
+  ],
+  documentContent: {
+    'doc-1': {
+      id: 'doc-1',
+      title: 'Business Proposal - Q3 2025',
+      type: 'proposal',
+      total_pages: 5,
+      pages: [
+        {
+          page_number: 1,
+          title: 'Introduction',
+          content: '<h1>Business Proposal</h1><p>This proposal outlines our services and solutions for Q3 2025. We are excited to present our innovative approach to solving your business challenges.</p><h2>Company Background</h2><p>effyDOC has been a leader in document solutions since 2023, serving over 500 enterprise clients worldwide.</p>'
+        },
+        {
+          page_number: 2,
+          title: 'Services',
+          content: '<h2>Our Services</h2><ul><li>Document Automation</li><li>AI-Powered Content Generation</li><li>Analytics and Tracking</li><li>Integration Solutions</li></ul>'
+        }
+      ],
+      sections: [
+        {
+          id: 'section-1',
+          title: 'Introduction',
+          content: '<h1>Business Proposal</h1><p>This proposal outlines our services and solutions for Q3 2025. We are excited to present our innovative approach to solving your business challenges.</p><h2>Company Background</h2><p>effyDOC has been a leader in document solutions since 2023, serving over 500 enterprise clients worldwide.</p>',
+          order: 1
+        },
+        {
+          id: 'section-2',
+          title: 'Services',
+          content: '<h2>Our Services</h2><ul><li>Document Automation</li><li>AI-Powered Content Generation</li><li>Analytics and Tracking</li><li>Integration Solutions</li></ul>',
+          order: 2
+        }
+      ],
+      can_edit: true
+    },
+    'doc-2': {
+      id: 'doc-2',
+      title: 'Service Agreement Template',
+      type: 'contract',
+      total_pages: 8,
+      pages: [
+        {
+          page_number: 1,
+          title: 'Terms and Conditions',
+          content: '<h1>Service Agreement</h1><p>This Service Agreement (the "Agreement") is entered into as of the date of signature (the "Effective Date") by and between effyDOC Inc. ("Provider") and the client ("Client").</p><h2>1. Services</h2><p>Provider agrees to provide Client with the following services (the "Services") as described in Exhibit A.</p>'
+        }
+      ],
+      sections: [
+        {
+          id: 'section-1',
+          title: 'Terms and Conditions',
+          content: '<h1>Service Agreement</h1><p>This Service Agreement (the "Agreement") is entered into as of the date of signature (the "Effective Date") by and between effyDOC Inc. ("Provider") and the client ("Client").</p><h2>1. Services</h2><p>Provider agrees to provide Client with the following services (the "Services") as described in Exhibit A.</p>',
+          order: 1
+        }
+      ],
+      can_edit: true
+    },
+    'doc-3': {
+      id: 'doc-3',
+      title: 'Product Roadmap 2025-2026',
+      type: 'document',
+      total_pages: 12,
+      pages: [
+        {
+          page_number: 1,
+          title: 'Executive Summary',
+          content: '<h1>Product Roadmap 2025-2026</h1><p>This document outlines our product strategy and development plans for the upcoming fiscal year.</p><h2>Vision</h2><p>To become the leading document solution provider by leveraging AI and analytics to transform how businesses create, share, and track documents.</p>'
+        }
+      ],
+      sections: [
+        {
+          id: 'section-1',
+          title: 'Executive Summary',
+          content: '<h1>Product Roadmap 2025-2026</h1><p>This document outlines our product strategy and development plans for the upcoming fiscal year.</p><h2>Vision</h2><p>To become the leading document solution provider by leveraging AI and analytics to transform how businesses create, share, and track documents.</p>',
+          order: 1
+        }
+      ],
+      can_edit: true
+    }
+  },
+  analytics: {
+    'doc-1': {
+      document_id: 'doc-1',
+      document_title: 'Business Proposal - Q3 2025',
+      summary: {
+        total_views: 12,
+        total_emails: 5,
+        unique_viewers: 8,
+        total_opens: 4,
+        total_clicks: 3,
+        open_rate: 80.0,
+        click_rate: 60.0
+      },
+      recent_activity_count: 3,
+      total_events: 24,
+      last_activity: '2025-06-27T15:30:00Z',
+      generated_at: '2025-06-28T07:45:00Z'
+    },
+    'doc-2': {
+      document_id: 'doc-2',
+      document_title: 'Service Agreement Template',
+      summary: {
+        total_views: 24,
+        total_emails: 10,
+        unique_viewers: 15,
+        total_opens: 8,
+        total_clicks: 6,
+        open_rate: 80.0,
+        click_rate: 60.0
+      },
+      recent_activity_count: 5,
+      total_events: 43,
+      last_activity: '2025-06-27T16:45:00Z',
+      generated_at: '2025-06-28T07:45:00Z'
+    },
+    'doc-3': {
+      document_id: 'doc-3',
+      document_title: 'Product Roadmap 2025-2026',
+      summary: {
+        total_views: 36,
+        total_emails: 15,
+        unique_viewers: 22,
+        total_opens: 12,
+        total_clicks: 9,
+        open_rate: 80.0,
+        click_rate: 60.0
+      },
+      recent_activity_count: 8,
+      total_events: 67,
+      last_activity: '2025-06-27T18:15:00Z',
+      generated_at: '2025-06-28T07:45:00Z'
+    }
   }
-  return config;
-});
-
-// Handle responses and errors
-api.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    console.error('API Error:', error.response || error);
-    return Promise.reject(error);
-  }
-);
+};
 
 const OutlookPluginSimulation = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('auth');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [sessionInfo, setSessionInfo] = useState(null);
@@ -70,16 +254,27 @@ const OutlookPluginSimulation = () => {
   const authenticatePlugin = async () => {
     try {
       setLoading({...loading, auth: true});
-      // Check if user is already authenticated
-      if (!user) {
-        setErrors({...errors, auth: 'You must be logged in to use the plugin'});
-        setLoading({...loading, auth: false});
-        return;
-      }
-
-      // Get session info from the plugin API
-      const response = await api.get('/outlook-native/user/session-info');
-      setSessionInfo(response);
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Use mock data for simulation
+      setSessionInfo({
+        user_email: MOCK_DATA.user.email,
+        full_name: MOCK_DATA.user.full_name,
+        organization: MOCK_DATA.user.organization,
+        role: MOCK_DATA.user.role,
+        connected_at: new Date().toISOString(),
+        permissions: {
+          can_send_documents: true,
+          can_view_analytics: true,
+          can_access_content_hub: true,
+          can_create_documents: true
+        },
+        plugin_version: '1.0.0',
+        api_version: 'native-v1'
+      });
+      
       setIsAuthenticated(true);
       setLoading({...loading, auth: false});
       toast.success('Plugin authenticated successfully');
@@ -87,7 +282,7 @@ const OutlookPluginSimulation = () => {
       // Automatically load documents after authentication
       loadDocuments();
     } catch (error) {
-      setErrors({...errors, auth: error.response?.data?.detail || 'Authentication failed'});
+      setErrors({...errors, auth: 'Authentication failed'});
       setLoading({...loading, auth: false});
       toast.error('Authentication failed');
     }
@@ -97,16 +292,17 @@ const OutlookPluginSimulation = () => {
   const loadDocuments = async () => {
     try {
       setLoading({...loading, documents: true});
-      const response = await api.get('/outlook-native/documents/my-library');
-      setDocuments(response.documents);
       
-      // Also load content hub
-      const hubResponse = await api.get('/outlook-native/documents/content-hub');
-      setContentHub(hubResponse.documents);
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Use mock data for simulation
+      setDocuments(MOCK_DATA.documents);
+      setContentHub(MOCK_DATA.contentHub);
       
       setLoading({...loading, documents: false});
     } catch (error) {
-      setErrors({...errors, documents: error.response?.data?.detail || 'Failed to load documents'});
+      setErrors({...errors, documents: 'Failed to load documents'});
       setLoading({...loading, documents: false});
       toast.error('Failed to load documents');
     }
@@ -116,11 +312,16 @@ const OutlookPluginSimulation = () => {
   const loadDocumentContent = async (documentId) => {
     try {
       setLoading({...loading, content: true});
-      const response = await api.get(`/outlook-native/documents/${documentId}/content`);
-      setDocumentContent(response);
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Use mock data for simulation
+      setDocumentContent(MOCK_DATA.documentContent[documentId]);
+      
       setLoading({...loading, content: false});
     } catch (error) {
-      setErrors({...errors, content: error.response?.data?.detail || 'Failed to load document content'});
+      setErrors({...errors, content: 'Failed to load document content'});
       setLoading({...loading, content: false});
       toast.error('Failed to load document content');
     }
@@ -135,12 +336,49 @@ const OutlookPluginSimulation = () => {
       }
       
       setLoading({...loading, attachment: true});
-      const response = await api.post(`/outlook-native/documents/${selectedDocument.id}/generate-attachment`);
-      setGeneratedAttachment(response);
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      
+      // Generate tracking link
+      const tracking_params = `?source=outlook_native&sender=${MOCK_DATA.user.email}&timestamp=${Math.floor(Date.now() / 1000)}`;
+      const tracking_link = `/view/${selectedDocument.id}${tracking_params}`;
+      
+      // Generate HTML content for email
+      const title = selectedDocument.title;
+      
+      const html_content = `
+      <div style='border: 2px solid #4f46e5; border-radius: 8px; padding: 16px; margin: 16px 0; background: #f8fafc;'>
+          <div style='display: flex; align-items: center; margin-bottom: 12px;'>
+              <strong style='color: #4f46e5; font-size: 16px;'>📄 effyDOC Document</strong>
+          </div>
+          <h3 style='color: #1e293b; margin: 0 0 8px 0; font-size: 18px;'>${title}</h3>
+          <p style='color: #64748b; margin: 0 0 12px 0; font-size: 14px;'>${selectedDocument.type} • ${selectedDocument.total_pages} pages • Updated ${new Date(selectedDocument.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+          <p style='color: #4f46e5; font-size: 12px; margin: 12px 0;'>
+              📊 This document includes tracking analytics and interactive elements
+          </p>
+          <div style='margin-top: 12px;'>
+              <a href='${tracking_link}' 
+                 style='background: #4f46e5; color: white; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500;'
+                 data-effydoc-document='${selectedDocument.id}' 
+                 class='effydoc-tracking-link'>
+                 View Full Document
+              </a>
+          </div>
+      </div>`;
+      
+      setGeneratedAttachment({
+        document_id: selectedDocument.id,
+        document_title: title,
+        html_content: html_content,
+        tracking_link: tracking_link,
+        generated_at: new Date().toISOString()
+      });
+      
       setLoading({...loading, attachment: false});
       toast.success('Trackable attachment generated');
     } catch (error) {
-      setErrors({...errors, attachment: error.response?.data?.detail || 'Failed to generate attachment'});
+      setErrors({...errors, attachment: 'Failed to generate attachment'});
       setLoading({...loading, attachment: false});
       toast.error('Failed to generate attachment');
     }
@@ -160,13 +398,9 @@ const OutlookPluginSimulation = () => {
       }
       
       setLoading({...loading, tracking: true});
-      const recipientList = recipients.split(',').map(email => email.trim());
       
-      const response = await api.post('/outlook-native/tracking/email-sent', {
-        document_id: selectedDocument.id,
-        recipients: recipientList,
-        subject: subject || `${selectedDocument.title} - Shared via effyDOC`
-      });
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       setEmailSent(true);
       setLoading({...loading, tracking: false});
@@ -175,7 +409,7 @@ const OutlookPluginSimulation = () => {
       // Load analytics after sending email
       loadAnalytics();
     } catch (error) {
-      setErrors({...errors, tracking: error.response?.data?.detail || 'Failed to track email'});
+      setErrors({...errors, tracking: 'Failed to track email'});
       setLoading({...loading, tracking: false});
       toast.error('Failed to track email');
     }
@@ -190,11 +424,16 @@ const OutlookPluginSimulation = () => {
       }
       
       setLoading({...loading, analytics: true});
-      const response = await api.get(`/outlook-native/analytics/documents/${selectedDocument.id}`);
-      setAnalytics(response);
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Use mock data for simulation
+      setAnalytics(MOCK_DATA.analytics[selectedDocument.id]);
+      
       setLoading({...loading, analytics: false});
     } catch (error) {
-      setErrors({...errors, analytics: error.response?.data?.detail || 'Failed to load analytics'});
+      setErrors({...errors, analytics: 'Failed to load analytics'});
       setLoading({...loading, analytics: false});
       toast.error('Failed to load analytics');
     }
@@ -230,8 +469,8 @@ const OutlookPluginSimulation = () => {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const response = await api.get('/outlook-native/status');
-        console.log('Plugin status:', response);
+        // Simulate API call
+        console.log('Plugin status: healthy');
       } catch (error) {
         console.error('Error checking plugin status:', error);
       }
