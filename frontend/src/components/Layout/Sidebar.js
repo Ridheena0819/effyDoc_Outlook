@@ -29,7 +29,6 @@ const Sidebar = ({ isOpen, onClose }) => {
     { name: 'Activity', href: '/activity', icon: EyeIcon },
     { name: 'Outlook Plugin', href: '/outlook-plugin-simulation', icon: EnvelopeIcon },
     { name: 'Download Plugin', href: '/outlook-plugin-download', icon: ArrowDownTrayIcon },
-    { name: 'Download Plugin', href: '/outlook-plugin-download', icon: ArrowDownTrayIcon },
     { name: 'Profile', href: '/profile', icon: UserCircleIcon },
     { name: 'Settings', href: '/settings', icon: CogIcon },
   ];
