@@ -886,6 +886,508 @@ def test_outlook_addin_workflow():
     
     print("\n✅ All Outlook Add-in workflow tests passed successfully!")
 
+def test_outlook_native_plugin_api():
+    """Test the native Outlook plugin API endpoints"""
+    print("\nStarting Native Outlook Plugin API tests...")
+    
+    # Test variables
+    base_url = BACKEND_URL
+    headers = {"Content-Type": "application/json"}
+    test_user_email = f"test.native.user.{uuid.uuid4()}@example.com"
+    test_user_password = "SecurePassword123!"
+    test_document_id = None
+    
+    # 1. Test the status endpoint
+    print("\n1. Testing Native Outlook Plugin status endpoint...")
+    response = requests.get(f"{base_url}/outlook-native/status")
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "status" in data, "Missing status in response"
+    assert data["status"] == "healthy", f"Expected 'healthy', got {data['status']}"
+    assert "service" in data, "Missing service in response"
+    assert "version" in data, "Missing version in response"
+    assert "features" in data, "Missing features in response"
+    
+    print("✅ Native Outlook Plugin status endpoint working")
+    
+    # 2. Register a test user
+    print("\n2. Registering test user...")
+    user_data = {
+        "email": test_user_email,
+        "full_name": "Native Test User",
+        "role": "editor",
+        "organization": "Test Organization",
+        "password": test_user_password
+    }
+    
+    response = requests.post(f"{base_url}/auth/register", json=user_data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Save token for subsequent tests
+    access_token = data["access_token"]
+    headers["Authorization"] = f"Bearer {access_token}"
+    print("✅ User registration successful")
+    
+    # 3. Test getting user session info
+    print("\n3. Testing get user session info...")
+    response = requests.get(f"{base_url}/outlook-native/user/session-info", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "user_email" in data, "Missing user_email in response"
+    assert data["user_email"] == test_user_email, f"Expected {test_user_email}, got {data['user_email']}"
+    assert "full_name" in data, "Missing full_name in response"
+    assert "organization" in data, "Missing organization in response"
+    assert "permissions" in data, "Missing permissions in response"
+    
+    print("✅ Get user session info working")
+    
+    # 4. Create a test document for subsequent tests
+    print("\n4. Creating test document...")
+    document_data = {
+        "title": "Native Outlook Test Document",
+        "type": "proposal",
+        "organization": "Test Organization",
+        "sections": [
+            {
+                "title": "Introduction",
+                "content": "This is a test document for native Outlook plugin integration.",
+                "order": 1
+            },
+            {
+                "title": "Features",
+                "content": "This document demonstrates native Outlook plugin integration features.",
+                "order": 2
+            }
+        ],
+        "tags": ["test", "outlook", "native", "integration"],
+        "metadata": {"purpose": "testing"}
+    }
+    
+    response = requests.post(f"{base_url}/documents", json=document_data, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Save document ID for subsequent tests
+    test_document_id = data["id"]
+    print(f"✅ Test document created with ID: {test_document_id}")
+    
+    # 5. Test getting user's document library
+    print("\n5. Testing get user's document library...")
+    response = requests.get(f"{base_url}/outlook-native/documents/my-library", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "documents" in data, "Missing documents in response"
+    assert "total_count" in data, "Missing total_count in response"
+    assert "user_email" in data, "Missing user_email in response"
+    assert data["user_email"] == test_user_email, f"Expected {test_user_email}, got {data['user_email']}"
+    
+    # Check if our test document is in the library
+    document_found = False
+    for doc in data["documents"]:
+        if doc["id"] == test_document_id:
+            document_found = True
+            assert doc["title"] == "Native Outlook Test Document", f"Expected 'Native Outlook Test Document', got {doc['title']}"
+            break
+    
+    assert document_found, "Test document not found in user's library"
+    print("✅ Get user's document library working")
+    
+    # 6. Test getting content hub documents
+    print("\n6. Testing get content hub documents...")
+    response = requests.get(f"{base_url}/outlook-native/documents/content-hub", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "documents" in data, "Missing documents in response"
+    assert "total_count" in data, "Missing total_count in response"
+    assert "organization" in data, "Missing organization in response"
+    
+    print("✅ Get content hub documents working")
+    
+    # 7. Test getting document content
+    print("\n7. Testing get document content...")
+    response = requests.get(f"{base_url}/outlook-native/documents/{test_document_id}/content", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "id" in data, "Missing id in response"
+    assert data["id"] == test_document_id, f"Expected {test_document_id}, got {data['id']}"
+    assert "title" in data, "Missing title in response"
+    assert "type" in data, "Missing type in response"
+    assert "pages" in data, "Missing pages in response"
+    assert "sections" in data, "Missing sections in response"
+    assert "can_edit" in data, "Missing can_edit in response"
+    assert data["can_edit"] == True, "Expected can_edit to be True for document owner"
+    
+    print("✅ Get document content working")
+    
+    # 8. Test generating trackable attachment
+    print("\n8. Testing generate trackable attachment...")
+    response = requests.post(f"{base_url}/outlook-native/documents/{test_document_id}/generate-attachment", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "document_id" in data, "Missing document_id in response"
+    assert data["document_id"] == test_document_id, f"Expected {test_document_id}, got {data['document_id']}"
+    assert "document_title" in data, "Missing document_title in response"
+    assert "html_content" in data, "Missing html_content in response"
+    assert "tracking_link" in data, "Missing tracking_link in response"
+    assert "generated_at" in data, "Missing generated_at in response"
+    
+    # Save tracking link for subsequent tests
+    tracking_link = data["tracking_link"]
+    print("✅ Generate trackable attachment working")
+    
+    # 9. Test tracking email sent event
+    print("\n9. Testing track email sent event...")
+    email_tracking_data = {
+        "document_id": test_document_id,
+        "recipients": ["recipient1@example.com", "recipient2@example.com"],
+        "subject": "Test Document from Native Outlook Plugin"
+    }
+    
+    response = requests.post(f"{base_url}/outlook-native/tracking/email-sent", json=email_tracking_data, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "message" in data, "Missing message in response"
+    assert "document_id" in data, "Missing document_id in response"
+    assert "recipients" in data, "Missing recipients in response"
+    assert "tracking_link" in data, "Missing tracking_link in response"
+    
+    print("✅ Track email sent event working")
+    
+    # 10. Test getting document analytics
+    print("\n10. Testing get document analytics...")
+    response = requests.get(f"{base_url}/outlook-native/analytics/documents/{test_document_id}", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify response structure
+    assert "document_id" in data, "Missing document_id in response"
+    assert data["document_id"] == test_document_id, f"Expected {test_document_id}, got {data['document_id']}"
+    assert "document_title" in data, "Missing document_title in response"
+    assert "summary" in data, "Missing summary in response"
+    assert "generated_at" in data, "Missing generated_at in response"
+    
+    # Verify summary data
+    assert "total_views" in data["summary"], "Missing total_views in summary"
+    assert "total_emails" in data["summary"], "Missing total_emails in summary"
+    assert "unique_viewers" in data["summary"], "Missing unique_viewers in summary"
+    
+    print("✅ Get document analytics working")
+    
+    # 11. Clean up (delete test document)
+    print("\n11. Cleaning up test document...")
+    response = requests.delete(f"{base_url}/documents/{test_document_id}", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    print("✅ Test document deleted successfully")
+    
+    print("\n✅ All Native Outlook Plugin API tests passed successfully!")
+
+def test_outlook_native_plugin_access_control():
+    """Test access control for Native Outlook Plugin API endpoints"""
+    print("\nStarting Native Outlook Plugin access control tests...")
+    
+    # Test variables
+    base_url = BACKEND_URL
+    headers = {"Content-Type": "application/json"}
+    
+    # Create two test users
+    test_user1_email = f"test.native.user1.{uuid.uuid4()}@example.com"
+    test_user2_email = f"test.native.user2.{uuid.uuid4()}@example.com"
+    test_password = "SecurePassword123!"
+    
+    # Register first user
+    print("\n1. Registering first test user...")
+    user1_data = {
+        "email": test_user1_email,
+        "full_name": "Test Native User 1",
+        "role": "editor",
+        "organization": "Test Organization",
+        "password": test_password
+    }
+    
+    response = requests.post(f"{base_url}/auth/register", json=user1_data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    user1_token = response.json()["access_token"]
+    user1_headers = headers.copy()
+    user1_headers["Authorization"] = f"Bearer {user1_token}"
+    
+    # Register second user
+    print("2. Registering second test user...")
+    user2_data = {
+        "email": test_user2_email,
+        "full_name": "Test Native User 2",
+        "role": "editor",
+        "organization": "Test Organization",
+        "password": test_password
+    }
+    
+    response = requests.post(f"{base_url}/auth/register", json=user2_data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    user2_token = response.json()["access_token"]
+    user2_headers = headers.copy()
+    user2_headers["Authorization"] = f"Bearer {user2_token}"
+    
+    # Create a document as user 1
+    print("3. Creating test document as user 1...")
+    document_data = {
+        "title": "Native Access Control Test Document",
+        "type": "proposal",
+        "organization": "Test Organization",
+        "sections": [
+            {
+                "title": "Introduction",
+                "content": "This is a test document for native access control testing.",
+                "order": 1
+            }
+        ],
+        "tags": ["test", "native", "access-control"],
+        "metadata": {"purpose": "testing"}
+    }
+    
+    response = requests.post(f"{base_url}/documents", json=document_data, headers=user1_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    document_id = response.json()["id"]
+    
+    # Test access control for document content endpoint
+    print("4. Testing access control for document content endpoint...")
+    
+    # User 1 (owner) should have access
+    response = requests.get(f"{base_url}/outlook-native/documents/{document_id}/content", headers=user1_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    assert response.json()["can_edit"] == True, "Owner should have edit permission"
+    
+    # User 2 (non-owner) should not have access
+    response = requests.get(f"{base_url}/outlook-native/documents/{document_id}/content", headers=user2_headers)
+    assert response.status_code in [403, 500], f"Expected 403 or 500, got {response.status_code}"
+    print("✅ Access control for document content endpoint working (non-owner denied access)")
+    
+    # Test access control for generate attachment endpoint
+    print("5. Testing access control for generate attachment endpoint...")
+    
+    # User 1 (owner) should be able to generate attachment
+    response = requests.post(f"{base_url}/outlook-native/documents/{document_id}/generate-attachment", headers=user1_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # User 2 (non-owner) should not be able to generate attachment
+    response = requests.post(f"{base_url}/outlook-native/documents/{document_id}/generate-attachment", headers=user2_headers)
+    assert response.status_code in [403, 500], f"Expected 403 or 500, got {response.status_code}"
+    print("✅ Access control for generate attachment endpoint working (non-owner denied access)")
+    
+    # Test access control for analytics endpoint
+    print("6. Testing access control for analytics endpoint...")
+    
+    # User 1 (owner) should be able to view analytics
+    response = requests.get(f"{base_url}/outlook-native/analytics/documents/{document_id}", headers=user1_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # User 2 (non-owner) should not be able to view analytics
+    response = requests.get(f"{base_url}/outlook-native/analytics/documents/{document_id}", headers=user2_headers)
+    assert response.status_code in [403, 500], f"Expected 403 or 500, got {response.status_code}"
+    print("✅ Access control for analytics endpoint working (non-owner denied access)")
+    
+    # Add user 2 as a collaborator
+    print("7. Adding user 2 as a collaborator...")
+    
+    # First, get the user ID for user 2
+    response = requests.get(f"{base_url}/users/me", headers=user2_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    user2_id = response.json()["id"]
+    
+    update_data = {
+        "collaborators": [
+            {
+                "user_id": user2_id,
+                "role": "editor"
+            }
+        ]
+    }
+    
+    response = requests.put(f"{base_url}/documents/{document_id}", json=update_data, headers=user1_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # Test access after adding as collaborator
+    print("8. Testing access after adding as collaborator...")
+    
+    # User 2 should now have access to view document content
+    response = requests.get(f"{base_url}/outlook-native/documents/{document_id}/content", headers=user2_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # User 2 should be able to generate attachment
+    response = requests.post(f"{base_url}/outlook-native/documents/{document_id}/generate-attachment", headers=user2_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # Clean up
+    print("9. Cleaning up test document...")
+    response = requests.delete(f"{base_url}/documents/{document_id}", headers=user1_headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    print("✅ All Native Outlook Plugin access control tests passed successfully!")
+
+def test_complete_native_outlook_plugin_workflow():
+    """Test the complete native Outlook plugin workflow"""
+    print("\nStarting complete Native Outlook Plugin workflow test...")
+    
+    # Test variables
+    base_url = BACKEND_URL
+    headers = {"Content-Type": "application/json"}
+    test_user_email = f"test.native.workflow.{uuid.uuid4()}@example.com"
+    test_user_password = "SecurePassword123!"
+    
+    # 1. Authentication Flow
+    print("\n1. Testing Authentication Flow...")
+    
+    # Register a new user
+    print("  - Registering new user...")
+    user_data = {
+        "email": test_user_email,
+        "full_name": "Native Workflow Test User",
+        "role": "editor",
+        "organization": "Test Organization",
+        "password": test_user_password
+    }
+    
+    response = requests.post(f"{base_url}/auth/register", json=user_data)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify JWT token generation
+    assert "access_token" in data, "Missing access_token in response"
+    assert "token_type" in data, "Missing token_type in response"
+    assert data["token_type"] == "bearer", f"Expected 'bearer', got {data['token_type']}"
+    
+    # Save token for subsequent tests
+    access_token = data["access_token"]
+    headers["Authorization"] = f"Bearer {access_token}"
+    
+    # Test token validation for protected endpoints
+    print("  - Testing token validation...")
+    response = requests.get(f"{base_url}/users/me", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    # Test with invalid token
+    invalid_headers = headers.copy()
+    invalid_headers["Authorization"] = "Bearer invalid_token"
+    response = requests.get(f"{base_url}/users/me", headers=invalid_headers)
+    assert response.status_code == 401, f"Expected 401, got {response.status_code}"
+    
+    print("✅ Authentication Flow working correctly")
+    
+    # 2. Document Creation
+    print("\n2. Testing Document Creation...")
+    
+    # Create a test document
+    document_data = {
+        "title": "Native Workflow Test Document",
+        "type": "proposal",
+        "organization": "Test Organization",
+        "sections": [
+            {
+                "title": "Executive Summary",
+                "content": "This is a test document for the complete native Outlook plugin workflow.",
+                "order": 1
+            },
+            {
+                "title": "Proposal Details",
+                "content": "This document demonstrates the complete workflow for the native Outlook plugin.",
+                "order": 2
+            }
+        ],
+        "tags": ["test", "native", "workflow"],
+        "metadata": {"purpose": "testing"}
+    }
+    
+    response = requests.post(f"{base_url}/documents", json=document_data, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    document_id = response.json()["id"]
+    
+    print("✅ Document Creation working correctly")
+    
+    # 3. Document Retrieval via Native Plugin API
+    print("\n3. Testing Document Retrieval via Native Plugin API...")
+    
+    # Test getting user's document library
+    response = requests.get(f"{base_url}/outlook-native/documents/my-library", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Check if our test document is in the library
+    document_found = False
+    for doc in data["documents"]:
+        if doc["id"] == document_id:
+            document_found = True
+            break
+    
+    assert document_found, "Test document not found in user's library"
+    
+    # Test getting document content
+    response = requests.get(f"{base_url}/outlook-native/documents/{document_id}/content", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    print("✅ Document Retrieval via Native Plugin API working correctly")
+    
+    # 4. Generating Trackable Attachment
+    print("\n4. Testing Generating Trackable Attachment...")
+    
+    response = requests.post(f"{base_url}/outlook-native/documents/{document_id}/generate-attachment", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify HTML content contains tracking link
+    assert "View Full Document" in data["html_content"], "Missing 'View Full Document' link in HTML content"
+    assert data["tracking_link"] in data["html_content"], "Tracking link not found in HTML content"
+    
+    print("✅ Generating Trackable Attachment working correctly")
+    
+    # 5. Tracking Email Sent
+    print("\n5. Testing Tracking Email Sent...")
+    
+    email_tracking_data = {
+        "document_id": document_id,
+        "recipients": ["recipient1@example.com", "recipient2@example.com"],
+        "subject": "Complete Workflow Test"
+    }
+    
+    response = requests.post(f"{base_url}/outlook-native/tracking/email-sent", json=email_tracking_data, headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    print("✅ Tracking Email Sent working correctly")
+    
+    # 6. Viewing Analytics
+    print("\n6. Testing Viewing Analytics...")
+    
+    response = requests.get(f"{base_url}/outlook-native/analytics/documents/{document_id}", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    data = response.json()
+    
+    # Verify analytics data
+    assert data["document_id"] == document_id, f"Expected {document_id}, got {data['document_id']}"
+    assert "summary" in data, "Missing summary in response"
+    assert "total_emails" in data["summary"], "Missing total_emails in summary"
+    assert data["summary"]["total_emails"] >= 1, "Expected at least 1 email sent"
+    
+    print("✅ Viewing Analytics working correctly")
+    
+    # 7. Clean up
+    print("\n7. Cleaning up test document...")
+    response = requests.delete(f"{base_url}/documents/{document_id}", headers=headers)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+    
+    print("\n✅ Complete Native Outlook Plugin workflow test passed successfully!")
+
 if __name__ == "__main__":
     # Run the Outlook Add-in integration tests
     test_outlook_addin_integration()
@@ -895,3 +1397,12 @@ if __name__ == "__main__":
     
     # Run the workflow tests
     test_outlook_addin_workflow()
+    
+    # Run the Native Outlook Plugin API tests
+    test_outlook_native_plugin_api()
+    
+    # Run the Native Outlook Plugin access control tests
+    test_outlook_native_plugin_access_control()
+    
+    # Run the complete Native Outlook Plugin workflow test
+    test_complete_native_outlook_plugin_workflow()
