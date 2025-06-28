@@ -20,7 +20,7 @@ from models import *
 from database import Database, get_collection, create_indexes
 from auth import get_current_active_user, require_role, check_document_access, create_access_token, verify_password, get_password_hash, ACCESS_TOKEN_EXPIRE_MINUTES
 from openai_service import openai_service
-from outlook_api import router as outlook_router
+from outlook_native_api import router as outlook_native_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
