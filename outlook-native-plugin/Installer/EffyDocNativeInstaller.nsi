@@ -4,7 +4,7 @@
 !define PRODUCT_NAME "effyDOC Outlook Plugin"
 !define PRODUCT_VERSION "1.0.0"
 !define PRODUCT_PUBLISHER "effyDOC"
-!define PRODUCT_WEB_SITE "https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com"
+!define PRODUCT_WEB_SITE "https://62eb7680-5805-4576-a9b6-a02867b40493.preview.emergentagent.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\EffyDocOutlookPlugin"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKCU"

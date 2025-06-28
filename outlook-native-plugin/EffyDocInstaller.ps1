@@ -12,7 +12,7 @@ param(
 $PluginName = "effyDOC Outlook Plugin"
 $PluginVersion = "1.0.0"
 $CompanyName = "effyDOC"
-$BaseUrl = "https://29429f14-70dc-41c8-bef0-98a176108ced.preview.emergentagent.com"
+$BaseUrl = "https://62eb7680-5805-4576-a9b6-a02867b40493.preview.emergentagent.com"
 
 # Installation paths
 $InstallDir = "$env:LOCALAPPDATA\$PluginName"
