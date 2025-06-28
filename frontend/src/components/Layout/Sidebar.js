@@ -12,6 +12,7 @@ import {
   EyeIcon,
   UserCircleIcon,
   EnvelopeIcon,
+  ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
 
 const Sidebar = ({ isOpen, onClose }) => {
