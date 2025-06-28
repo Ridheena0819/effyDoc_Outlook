@@ -65,6 +65,11 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
+// Special route for Outlook Plugin Simulation that doesn't require authentication
+const SimulationRoute = ({ children }) => {
+  return children;
+};
+
 // Placeholder components for other routes
 const Documents = () => (
   <div className="text-center py-12">
