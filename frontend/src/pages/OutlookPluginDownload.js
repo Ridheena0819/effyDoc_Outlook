@@ -14,39 +14,13 @@ const OutlookPluginDownload = () => {
   const [downloadType, setDownloadType] = useState('source');
 
   const handleDownloadSource = () => {
-    // Create a downloadable package of the plugin source code
-    const pluginFiles = {
-      'README.md': `# effyDOC Native Outlook Plugin
-
-## Build Requirements
-- Windows 10/11
-- Visual Studio 2019/2022 with Office development tools
-- Microsoft Office 2013/2016/2019/365
-- NSIS 3.0+ for installer creation
-
-## Build Instructions
-1. Open EffyDocOutlookPlugin.sln in Visual Studio
-2. Install NuGet package: Newtonsoft.Json
-3. Build → Rebuild Solution
-4. Compile NSIS installer script
-5. Result: EffyDocOutlookPlugin-Setup.exe
-
-For detailed instructions, see BUILD_INSTRUCTIONS.md
-`,
-      'BUILD_INSTRUCTIONS.md': 'See complete build guide in the downloaded package'
-    };
-
-    // Create blob and download
-    const content = JSON.stringify(pluginFiles, null, 2);
-    const blob = new Blob([content], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
+    // Download the actual plugin package
     const link = document.createElement('a');
-    link.href = url;
-    link.download = 'effydoc-outlook-plugin-source.json';
+    link.href = '/outlook-plugin-package.tar.gz';
+    link.download = 'effydoc-outlook-plugin-source.tar.gz';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   const copyToClipboard = (text) => {
