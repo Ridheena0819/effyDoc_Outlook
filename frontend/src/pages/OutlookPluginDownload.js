@@ -105,11 +105,11 @@ const OutlookPluginDownload = () => {
               </div>
               
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Installer (.bat)
+                Windows Installer (.exe)
               </h3>
               
               <p className="text-gray-600 mb-6 text-sm">
-                Download the working installer file. Right-click and "Run as Administrator" for best results.
+                Real Windows executable with GUI installer. Built with Python and PyInstaller.
               </p>
 
               {installerExists ? (
