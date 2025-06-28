@@ -13,6 +13,7 @@ import Profile from './pages/Profile';
 import DocumentUpload from './pages/DocumentUpload';
 import DocumentEditor from './pages/DocumentEditor';
 import PagewiseDocumentViewer from './pages/PagewiseDocumentViewer';
+import OutlookPluginSimulation from './pages/OutlookPluginSimulation';
 import { 
   PlusIcon, 
   CloudArrowUpIcon, 
