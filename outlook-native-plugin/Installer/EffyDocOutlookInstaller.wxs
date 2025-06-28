@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="effyDOC Outlook Plugin" Language="1033" Version="1.0.0.0" Manufacturer="effyDOC" UpgradeCode="PUT-GUID-HERE">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Prerequisites -->
+    <PropertyRef Id="NETFRAMEWORK40FULL"/>
+    <PropertyRef Id="VSTO40RUNTIME"/>
+    
+    <Condition Message="This application requires .NET Framework 4.0 or higher.">
+      <![CDATA[Installed OR NETFRAMEWORK40FULL]]>
+    </Condition>
+    
+    <Condition Message="This application requires Microsoft Visual Studio 2010 Tools for Office Runtime.">
+      <![CDATA[Installed OR VSTO40RUNTIME]]>
+    </Condition>
+
+    <!-- Check if Outlook is installed -->
+    <Property Id="OUTLOOKINSTALLED">
+      <RegistrySearch Id="OutlookSearch"
+                      Root="HKLM"
+                      Key="SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\OUTLOOK.EXE"
+                      Type="file" />
+    </Property>
+    
+    <Condition Message="Microsoft Outlook must be installed before installing this add-in.">
+      <![CDATA[Installed OR OUTLOOKINSTALLED]]>
+    </Condition>
+
+    <!-- UI -->
+    <UIRef Id="WixUI_InstallDir" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    
+    <!-- License -->
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+    
+    <!-- Banner and Dialog -->
+    <WixVariable Id="WixUIBannerBmp" Value="Banner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="Dialog.bmp" />
+
+    <Feature Id="ProductFeature" Title="effyDOC Outlook Plugin" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="RegistryEntries" />
+    </Feature>
+
+    <!-- Installation Directory -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="LocalAppDataFolder">
+        <Directory Id="INSTALLFOLDER" Name="effyDOC Outlook Plugin" />
+      </Directory>
+      
+      <!-- Start Menu -->
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="effyDOC Outlook Plugin"/>
+      </Directory>
+    </Directory>
+
+    <!-- Components -->
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- Main Assembly -->
+      <Component Id="MainAssembly" Guid="PUT-GUID-HERE">
+        <File Id="EffyDocOutlookPlugin.dll" 
+              Source="$(var.EffyDocOutlookPlugin.TargetPath)" 
+              KeyPath="yes" />
+      </Component>
+      
+      <!-- Manifest -->
+      <Component Id="Manifest" Guid="PUT-GUID-HERE">
+        <File Id="EffyDocOutlookPlugin.dll.manifest" 
+              Source="$(var.EffyDocOutlookPlugin.TargetPath).manifest" />
+      </Component>
+      
+      <!-- VSTO -->
+      <Component Id="VSTODeployment" Guid="PUT-GUID-HERE">
+        <File Id="EffyDocOutlookPlugin.vsto" 
+              Source="$(var.EffyDocOutlookPlugin.ProjectDir)bin\$(var.EffyDocOutlookPlugin.Configuration)\EffyDocOutlookPlugin.vsto" />
+      </Component>
+      
+      <!-- Dependencies -->
+      <Component Id="NewtonsoftJson" Guid="PUT-GUID-HERE">
+        <File Id="Newtonsoft.Json.dll" 
+              Source="$(var.EffyDocOutlookPlugin.TargetDir)Newtonsoft.Json.dll" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Registry Entries -->
+    <Component Id="RegistryEntries" Directory="INSTALLFOLDER" Guid="PUT-GUID-HERE">
+      <!-- VSTO Add-in Registration -->
+      <RegistryKey Root="HKCU" Key="Software\Microsoft\Office\Outlook\Addins\EffyDocOutlookPlugin">
+        <RegistryValue Type="string" Name="Description" Value="effyDOC document tracking and attachment plugin for Outlook" />
+        <RegistryValue Type="string" Name="FriendlyName" Value="effyDOC Outlook Plugin" />
+        <RegistryValue Type="integer" Name="LoadBehavior" Value="3" />
+        <RegistryValue Type="string" Name="Manifest" Value="[INSTALLFOLDER]EffyDocOutlookPlugin.vsto|vstolocal" />
+      </RegistryKey>
+      
+      <!-- Uninstall Information -->
+      <RegistryKey Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\effyDOC Outlook Plugin">
+        <RegistryValue Type="string" Name="DisplayName" Value="effyDOC Outlook Plugin" />
+        <RegistryValue Type="string" Name="DisplayVersion" Value="1.0.0" />
+        <RegistryValue Type="string" Name="Publisher" Value="effyDOC" />
+        <RegistryValue Type="string" Name="InstallLocation" Value="[INSTALLFOLDER]" />
+        <RegistryValue Type="string" Name="UninstallString" Value="msiexec /x [ProductCode]" />
+        <RegistryValue Type="integer" Name="NoModify" Value="1" />
+        <RegistryValue Type="integer" Name="NoRepair" Value="1" />
+      </RegistryKey>
+    </Component>
+
+    <!-- Start Menu Shortcuts -->
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="PUT-GUID-HERE">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+                  Name="effyDOC Outlook Plugin"
+                  Description="effyDOC document tracking and attachment plugin"
+                  Target="[System64Folder]msiexec.exe"
+                  Arguments="/x [ProductCode]"
+                  Icon="ProductIcon"/>
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Microsoft\EffyDocOutlookPlugin" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+
+    <!-- Icon -->
+    <Icon Id="ProductIcon" SourceFile="effydoc-icon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="ProductIcon" />
+
+    <!-- Custom Actions -->
+    <CustomAction Id="StartOutlook" FileKey="outlook.exe" ExeCommand="" Return="asyncNoWait" />
+    
+    <InstallExecuteSequence>
+      <Custom Action="StartOutlook" After="InstallFinalize">NOT Installed</Custom>
+    </InstallExecuteSequence>
+
+  </Product>
+</Wix>
