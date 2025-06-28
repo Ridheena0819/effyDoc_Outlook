@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "backend_url": "https://62eb7680-5805-4576-a9b6-a02867b40493.preview.emergentagent.com",
-  "created_at": "2025-06-28T11:09:50.963125",
+  "created_at": "2025-06-28T11:12:06.795183",
   "installer_type": "batch_to_exe",
   "features": [
     "Document tracking",
