@@ -1320,6 +1320,236 @@ async def get_document_performance_data(document_id: str) -> Dict[str, Any]:
         }
     }
 
+# ==================== OUTLOOK INSTALLER ENDPOINTS ====================
+
+@api_router.post("/build-outlook-installer")
+async def build_outlook_installer(
+    installer_config: Dict[str, Any],
+    current_user: User = Depends(get_current_active_user)
+):
+    """Build the Outlook plugin installer automatically"""
+    import subprocess
+    import os
+    from pathlib import Path
+    
+    try:
+        # Only allow admin users to build installers
+        if current_user.role not in ["admin"]:
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        # Configuration
+        version = installer_config.get("version", "1.0.0")
+        backend_url = installer_config.get("backendURL", os.getenv("REACT_APP_BACKEND_URL", "http://localhost:8001"))
+        
+        # Path to the build script
+        script_path = Path(__file__).parent.parent / "scripts" / "build-outlook-installer.ps1"
+        output_path = Path(__file__).parent.parent / "frontend" / "public"
+        
+        if not script_path.exists():
+            raise HTTPException(status_code=404, detail="Build script not found")
+        
+        # Check if PowerShell is available (for Unix systems)
+        try:
+            # Try PowerShell Core first
+            subprocess.run(["pwsh", "--version"], capture_output=True, check=True)
+            ps_command = "pwsh"
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            try:
+                # Try Windows PowerShell
+                subprocess.run(["powershell", "-Command", "Get-Host"], capture_output=True, check=True)
+                ps_command = "powershell"
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                # Use the build script through shell (fallback)
+                return await build_installer_fallback(version, backend_url, output_path)
+        
+        # Run the PowerShell build script
+        cmd = [
+            ps_command,
+            "-ExecutionPolicy", "Bypass",
+            "-File", str(script_path),
+            "-Version", version,
+            "-OutputPath", str(output_path),
+            "-BackendURL", backend_url
+        ]
+        
+        logger.info(f"Running installer build command: {' '.join(cmd)}")
+        
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=300  # 5 minute timeout
+        )
+        
+        if result.returncode == 0:
+            # Check if the installer was created
+            installer_path = output_path / "EffyDocOutlookPlugin-Setup.exe"
+            if installer_path.exists():
+                installer_size = installer_path.stat().st_size
+                return {
+                    "success": True,
+                    "message": "Installer built successfully",
+                    "installer_path": "/EffyDocOutlookPlugin-Setup.exe",
+                    "version": version,
+                    "size_bytes": installer_size,
+                    "size_mb": round(installer_size / (1024 * 1024), 2)
+                }
+            else:
+                raise HTTPException(status_code=500, detail="Installer was not created")
+        else:
+            logger.error(f"Build script failed: {result.stderr}")
+            raise HTTPException(status_code=500, detail=f"Build failed: {result.stderr}")
+    
+    except subprocess.TimeoutExpired:
+        raise HTTPException(status_code=500, detail="Build process timed out")
+    except Exception as e:
+        logger.error(f"Error building installer: {e}")
+        raise HTTPException(status_code=500, detail=f"Build error: {str(e)}")
+
+async def build_installer_fallback(version: str, backend_url: str, output_path: Path):
+    """Fallback installer builder using Python when PowerShell is not available"""
+    import base64
+    
+    # Create a simplified installer script content
+    installer_content = f"""
+@echo off
+echo Installing effyDOC Outlook Plugin v{version}...
+echo.
+
+REM Check prerequisites
+echo Checking prerequisites...
+where outlook.exe >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Microsoft Outlook not found
+    echo Please install Microsoft Outlook and try again
+    pause
+    exit /b 1
+)
+
+REM Create installation directory
+set INSTALL_DIR=%USERPROFILE%\\AppData\\Roaming\\effyDOC\\OutlookPlugin
+set MANIFEST_DIR=%USERPROFILE%\\AppData\\Roaming\\Microsoft\\AddIns\\effyDOC
+
+echo Creating installation directories...
+if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
+if not exist "%MANIFEST_DIR%" mkdir "%MANIFEST_DIR%"
+
+REM Create manifest file
+echo Creating plugin manifest...
+(
+echo ^<?xml version="1.0" encoding="UTF-8"?^>
+echo ^<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+echo            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+echo            xsi:type="TaskPaneApp"^>
+echo   ^<Id^>effydoc-outlook-plugin-2024^</Id^>
+echo   ^<Version^>{version}^</Version^>
+echo   ^<ProviderName^>effyDOC^</ProviderName^>
+echo   ^<DefaultLocale^>en-US^</DefaultLocale^>
+echo   ^<DisplayName DefaultValue="effyDOC Document Tracker"/^>
+echo   ^<Description DefaultValue="Track document engagement in real-time directly from Outlook."/^>
+echo   ^<IconUrl DefaultValue="{backend_url}/icon-32.png"/^>
+echo   ^<HighResolutionIconUrl DefaultValue="{backend_url}/icon-64.png"/^>
+echo   ^<SupportUrl DefaultValue="{backend_url}/support"/^>
+echo   ^<AppDomains^>
+echo     ^<AppDomain^>{backend_url}^</AppDomain^>
+echo   ^</AppDomains^>
+echo   ^<Hosts^>
+echo     ^<Host Name="Mailbox"/^>
+echo   ^</Hosts^>
+echo   ^<Requirements^>
+echo     ^<Sets^>
+echo       ^<Set Name="Mailbox" MinVersion="1.8"/^>
+echo     ^</Sets^>
+echo   ^</Requirements^>
+echo   ^<FormSettings^>
+echo     ^<Form xsi:type="ItemRead"^>
+echo       ^<DesktopSettings^>
+echo         ^<SourceLocation DefaultValue="{backend_url}/outlook-addin/"/^>
+echo         ^<RequestedHeight^>500^</RequestedHeight^>
+echo       ^</DesktopSettings^>
+echo     ^</Form^>
+echo     ^<Form xsi:type="ItemEdit"^>
+echo       ^<DesktopSettings^>
+echo         ^<SourceLocation DefaultValue="{backend_url}/outlook-addin/"/^>
+echo         ^<RequestedHeight^>500^</RequestedHeight^>
+echo       ^</DesktopSettings^>
+echo     ^</Form^>
+echo   ^</FormSettings^>
+echo   ^<Permissions^>ReadWriteMailbox^</Permissions^>
+echo   ^<Rule xsi:type="RuleCollection" Mode="Or"^>
+echo     ^<Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/^>
+echo     ^<Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit"/^>
+echo   ^</Rule^>
+echo ^</OfficeApp^>
+) > "%MANIFEST_DIR%\\manifest.xml"
+
+REM Register plugin in Windows registry
+echo Registering plugin with Outlook...
+reg add "HKCU\\SOFTWARE\\Microsoft\\Office\\16.0\\WEF\\Developer" /v "effyDOC" /t REG_SZ /d "%MANIFEST_DIR%\\manifest.xml" /f >nul 2>&1
+reg add "HKCU\\SOFTWARE\\Microsoft\\Office\\15.0\\WEF\\Developer" /v "effyDOC" /t REG_SZ /d "%MANIFEST_DIR%\\manifest.xml" /f >nul 2>&1
+
+REM Create configuration file
+echo Creating configuration...
+(
+echo {{
+echo   "pluginVersion": "{version}",
+echo   "backendURL": "{backend_url}",
+echo   "installDate": "%date% %time%",
+echo   "features": {{
+echo     "documentTracking": true,
+echo     "realTimeAnalytics": true,
+echo     "emailIntegration": true
+echo   }}
+echo }}
+) > "%INSTALL_DIR%\\config.json"
+
+REM Create README
+echo Creating installation guide...
+(
+echo effyDOC Outlook Plugin Installation Complete!
+echo ==========================================
+echo.
+echo Installation Date: %date% %time%
+echo Plugin Version: {version}
+echo Installation Path: %INSTALL_DIR%
+echo Manifest Location: %MANIFEST_DIR%\\manifest.xml
+echo.
+echo Next Steps:
+echo 1. Restart Microsoft Outlook
+echo 2. Look for effyDOC panel in Outlook sidebar
+echo 3. Sign in with your effyDOC account
+echo 4. Start tracking documents!
+echo.
+echo Thank you for using effyDOC!
+) > "%INSTALL_DIR%\\README.txt"
+
+echo.
+echo ✓ Installation completed successfully!
+echo.
+echo Next Steps:
+echo 1. Restart Microsoft Outlook
+echo 2. Look for effyDOC panel in Outlook sidebar  
+echo 3. Sign in with your effyDOC account
+echo 4. Start tracking documents!
+echo.
+echo Installation guide: %INSTALL_DIR%\\README.txt
+echo.
+pause
+"""
+
+    # Save the batch installer
+    installer_path = output_path / "EffyDocOutlookPlugin-Setup.bat"
+    with open(installer_path, 'w', encoding='utf-8') as f:
+        f.write(installer_content)
+    
+    return {
+        "success": True,
+        "message": "Fallback installer created successfully",
+        "installer_path": "/EffyDocOutlookPlugin-Setup.bat",
+        "version": version,
+        "note": "Batch file installer created (PowerShell not available)"
+    }
+
 # ==================== BASIC ENDPOINTS ====================
 
 @api_router.get("/")
