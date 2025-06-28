@@ -328,6 +328,7 @@ function App() {
               <Route path="activity" element={<Analytics />} />
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="outlook-plugin-simulation" element={<OutlookPluginSimulation />} />
             </Route>
 
             {/* Catch all route */}
