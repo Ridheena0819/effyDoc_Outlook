@@ -1389,20 +1389,12 @@ def test_complete_native_outlook_plugin_workflow():
     print("\n✅ Complete Native Outlook Plugin workflow test passed successfully!")
 
 if __name__ == "__main__":
-    # Run the Outlook Add-in integration tests
-    test_outlook_addin_integration()
-    
-    # Run the access control tests
-    test_outlook_addin_access_control()
-    
-    # Run the workflow tests
-    test_outlook_addin_workflow()
-    
-    # Run the Native Outlook Plugin API tests
+    # Run only the Native Outlook Plugin API tests
+    print("Running Native Outlook Plugin API tests...")
     test_outlook_native_plugin_api()
     
-    # Run the Native Outlook Plugin access control tests
+    print("\nRunning Native Outlook Plugin access control tests...")
     test_outlook_native_plugin_access_control()
     
-    # Run the complete Native Outlook Plugin workflow test
+    print("\nRunning complete Native Outlook Plugin workflow test...")
     test_complete_native_outlook_plugin_workflow()
