@@ -404,6 +404,21 @@ backend:
       - working: true
         agent: "testing"
         comment: "Comprehensive testing of the access control for Outlook integration confirms it is working correctly. Document owners have full access to their documents, including viewing, editing, and generating attachments. Non-owners are properly denied access to documents they don't have permission to view. Collaborators have appropriate access based on their role, with the ability to view documents and generate attachments but not edit documents they don't own. The access control system properly integrates with the existing authorization system."
+        
+  - task: "Outlook Plugin Installer Generation"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented build-outlook-installer endpoint for generating Outlook plugin installers"
+      - working: true
+        agent: "testing"
+        comment: "Verified that the installer files are correctly generated and accessible. The installer-info.json file contains the correct metadata including version, backend URL, features, and requirements. Both EffyDocOutlookPlugin-Setup.exe and EffyDocOutlookPlugin-Setup.bat files are available and accessible. The access control is properly implemented, restricting the build endpoint to admin users only."
 
 frontend:
   - task: "API Integration Layer"
