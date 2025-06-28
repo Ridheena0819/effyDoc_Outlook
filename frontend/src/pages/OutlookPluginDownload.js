@@ -109,6 +109,10 @@ const OutlookPluginDownload = () => {
             <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
               Download the official effyDOC Outlook plugin installer. 
               One-click installation with automatic configuration and setup.
+              <br />
+              <span className="text-sm text-amber-600 mt-2 block">
+                Note: Downloads as .bat file for maximum compatibility
+              </span>
             </p>
 
             {/* Download Button */}
