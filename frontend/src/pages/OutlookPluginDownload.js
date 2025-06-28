@@ -157,7 +157,7 @@ const OutlookPluginDownload = () => {
             </div>
           </div>
 
-          {/* Alternative Option */}
+          {/* Alternative Option - Batch File */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="text-center">
               <div className="flex justify-center mb-4">
@@ -167,19 +167,64 @@ const OutlookPluginDownload = () => {
               </div>
               
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Manual Setup
+                Batch Installer (.bat)
               </h3>
               
               <p className="text-gray-600 mb-6 text-sm">
-                If the installer doesn't work, follow our step-by-step manual installation guide.
+                Alternative installer as batch file. Use if the .exe doesn't work or you prefer command-line.
               </p>
 
               <a
-                href="#manual-setup"
-                className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium inline-block"
+                href="/EffyDocOutlookPlugin-Setup.bat"
+                download="EffyDocOutlookPlugin-Setup.bat"
+                className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium inline-block text-center"
               >
-                <InformationCircleIcon className="h-5 w-5 mr-2 inline-block" />
-                View Manual Setup
+                <ArrowDownTrayIcon className="h-5 w-5 mr-2 inline-block" />
+                Download .bat File
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Alternative Downloads */}
+        <div className="bg-gray-50 rounded-lg p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Alternative Download Options
+          </h2>
+          
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="text-center">
+              <a
+                href="/EffyDocOutlookPlugin-Setup.bat"
+                download="EffyDocOutlookPlugin-Setup.bat"
+                className="block bg-white p-4 rounded-lg border hover:border-blue-300 transition-colors"
+              >
+                <DocumentTextIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                <div className="font-medium text-sm">Batch File (.bat)</div>
+                <div className="text-xs text-gray-500">8.9 KB</div>
+              </a>
+            </div>
+            
+            <div className="text-center">
+              <a
+                href="/outlook-addin/manifest.xml"
+                download="manifest.xml"
+                className="block bg-white p-4 rounded-lg border hover:border-green-300 transition-colors"
+              >
+                <CogIcon className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                <div className="font-medium text-sm">Manifest Only</div>
+                <div className="text-xs text-gray-500">Manual setup</div>
+              </a>
+            </div>
+            
+            <div className="text-center">
+              <a
+                href="#manual-setup"
+                className="block bg-white p-4 rounded-lg border hover:border-purple-300 transition-colors"
+              >
+                <InformationCircleIcon className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                <div className="font-medium text-sm">Manual Guide</div>
+                <div className="text-xs text-gray-500">Step-by-step</div>
               </a>
             </div>
           </div>
